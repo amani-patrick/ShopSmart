@@ -37,7 +37,8 @@
     "loginSuccess": "Successfully logged in",
     "signingIn": "Signing in...",
     "demoLogin": "Demo credentials",
-    "save": "Save"
+    "save": "Save",
+    "UnexpectedError":"UnexpectedError"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -69,7 +70,9 @@
     "lowStockAlert": "Low stock alert",
     "runningLow": "is running low on stock",
     "hoursAgo": "hours ago",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "inventory":"Inventory",
+    "debts":"Debts"
   },
   "admin": {
     "title": "Admin Dashboard",

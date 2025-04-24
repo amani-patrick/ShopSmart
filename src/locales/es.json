@@ -68,7 +68,9 @@
     "lowStockAlert": "Alerta de stock bajo",
     "runningLow": "tiene poco stock",
     "hoursAgo": "horas atrás",
-    "yesterday": "Ayer"
+    "yesterday": "Ayer",
+    "inventory":"Inventario",
+    "debts":"Deudas"
   },
   "admin": {
     "title": "Panel de administración",

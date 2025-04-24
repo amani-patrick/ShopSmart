@@ -1,17 +1,7 @@
-
-import { useState } from "react";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Save, 
-  ShieldCheck 
-} from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,12 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Form,
   FormControl,
@@ -64,82 +49,45 @@ const profileFormSchema = z.object({
   bio: z.string().optional(),
 });
 
-const securityFormSchema = z.object({
-  currentPassword: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }),
-  newPassword: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }),
-  confirmPassword: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
-
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
-type SecurityFormValues = z.infer<typeof securityFormSchema>;
 
 const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  
-  // Mock user data, in a real app this would come from a database
-  const defaultValues: Partial<ProfileFormValues> = {
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+1 (555) 123-4567",
-    street: "123 Main Street",
-    city: "San Francisco",
-    postalCode: "94105",
-    country: "United States",
-    bio: "Retail store owner with 5 years of experience in inventory management.",
-  };
+  const [userData, setUserData] = useState<Partial<ProfileFormValues>>({});
+
+  useEffect(() => {
+    // Fetch user data from local storage
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUserData({
+        name: `${parsedUser.firstName} ${parsedUser.lastName}`,
+        email: parsedUser.email,
+        phone: parsedUser.phone || "",
+        street: parsedUser.address?.street || "",
+        city: parsedUser.address?.city || "",
+        postalCode: parsedUser.address?.postalCode || "",
+        country: parsedUser.address?.country || "",
+        bio: parsedUser.bio || "",
+      });
+    }
+  }, []);
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
-  });
-
-  const securityForm = useForm<SecurityFormValues>({
-    resolver: zodResolver(securityFormSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
+    defaultValues: userData,
   });
 
   function onProfileSubmit(data: ProfileFormValues) {
     setIsLoading(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
       toast({
         title: "Profile updated",
         description: "Your profile information has been updated.",
-      });
-      console.log(data);
-    }, 1000);
-  }
-
-  function onSecuritySubmit(data: SecurityFormValues) {
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Password changed",
-        description: "Your password has been successfully updated.",
-      });
-      securityForm.reset({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
       });
       console.log(data);
     }, 1000);
@@ -158,26 +106,21 @@ const Profile = () => {
 
       <div className="flex items-center mb-8 space-x-4">
         <Avatar className="h-16 w-16">
-          <AvatarFallback className="bg-brand-100 text-brand-700 text-xl">JD</AvatarFallback>
+          <AvatarFallback className="bg-brand-100 text-brand-700 text-xl">
+            {userData.name?.[0] || "U"}
+          </AvatarFallback>
         </Avatar>
         <div>
-          <h2 className="text-xl font-semibold">{defaultValues.name}</h2>
-          <p className="text-muted-foreground">{defaultValues.email}</p>
+          <h2 className="text-xl font-semibold">{userData.name || "User"}</h2>
+          <p className="text-muted-foreground">{userData.email || "No email"}</p>
         </div>
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="w-full md:w-auto mb-6">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User size={16} />
-            <span>Profile</span>
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <ShieldCheck size={16} />
-            <span>Security</span>
-          </TabsTrigger>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="profile">
           <Card>
             <CardHeader>
@@ -188,7 +131,10 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               <Form {...profileForm}>
-                <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
+                <form
+                  onSubmit={profileForm.handleSubmit(onProfileSubmit)}
+                  className="space-y-6"
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={profileForm.control}
@@ -196,12 +142,12 @@ const Profile = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                            <FormControl>
+                              <Input placeholder={userData.name || "Your full name"} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                                                  )}
                     />
                     <FormField
                       control={profileForm.control}
@@ -210,20 +156,7 @@ const Profile = () => {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={profileForm.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Your phone number" {...field} />
+                            <Input placeholder={userData.email||"Your email"} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -232,7 +165,7 @@ const Profile = () => {
                   </div>
 
                   <Separator className="my-4" />
-                  
+
                   <h3 className="text-lg font-medium mb-4">Address Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
@@ -261,116 +194,10 @@ const Profile = () => {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={profileForm.control}
-                      name="postalCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Postal Code</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Postal code" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={profileForm.control}
-                      name="country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Country" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
 
-                  <FormField
-                    control={profileForm.control}
-                    name="bio"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bio</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Tell us a bit about yourself" 
-                            className="resize-none min-h-[120px]"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button type="submit" disabled={isLoading} className="flex items-center gap-2">
-                    {isLoading ? "Saving..." : "Save Changes"}
-                    <Save size={16} />
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle>Password</CardTitle>
-              <CardDescription>
-                Update your password to secure your account.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...securityForm}>
-                <form onSubmit={securityForm.handleSubmit(onSecuritySubmit)} className="space-y-6">
-                  <FormField
-                    control={securityForm.control}
-                    name="currentPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Current Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Enter current password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={securityForm.control}
-                      name="newPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>New Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="Enter new password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={securityForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirm New Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="Confirm new password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Updating..." : "Update Password"}
+                    {isLoading ? "Saving..." : "Save Changes"}
                   </Button>
                 </form>
               </Form>

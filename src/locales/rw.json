@@ -26,7 +26,7 @@
     "privacyPolicy": "Amabwiriza y'ibanga",
     "dashboard": "Ikibaho",
     "inventory": "Ibicuruzwa",
-    "sales": "Ubudandaji",
+    "sales": "Imicururize",
     "debts": "Imyenda",
     "reports": "Raporo",
     "suppliers": "Abazana ibicuruzwa",
@@ -49,9 +49,9 @@
     "items": "ibintu",
     "activeDebts": "Imyenda ihari",
     "overview": "Incamake",
-    "salesOverview": "Incamake y'ubudandaji",
+    "salesOverview": "Incamake y'imicururize",
     "salesPerformance": "Umusaruro wawe w'iminsi 30 ishize",
-    "salesByCategory": "Ubudandaji bukurikije icyiciro cy'ibicuruzwa",
+    "salesByCategory": "imicururize bukurikije icyiciro cy'ibicuruzwa",
     "topSelling": "Ibyiciro bigurwa cyane mu kwezi gushize",
     "inventoryLevels": "Ingano y'ibicuruzwa",
     "currentInventory": "Ingano y'ibicuruzwa bihari ubu bukurikije icyiciro",
@@ -68,7 +68,9 @@
     "lowStockAlert": "Imburira y'ibicuruzwa bike",
     "runningLow": "bifite ingano nke",
     "hoursAgo": "amasaha ashize",
-    "yesterday": "Ejo hashize"
+    "yesterday": "Ejo hashize",
+    "inventory":"Ibicuruzwa",
+    "debts":"Imyenda"
   },
   "admin": {
     "title": "Ikibaho cy'Umuyobozi",

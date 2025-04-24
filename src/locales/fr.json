@@ -68,7 +68,9 @@
     "lowStockAlert": "Alerte de stock bas",
     "runningLow": "est en rupture de stock",
     "hoursAgo": "heures",
-    "yesterday": "Hier"
+    "yesterday": "Hier",
+    "inventory":"Inventaire",
+    "debts":"Dettes"
   },
   "admin": {
     "title": "Tableau de bord administrateur",

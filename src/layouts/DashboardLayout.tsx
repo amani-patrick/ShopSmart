@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -68,9 +68,24 @@ const DashboardLayout = () => {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
   const { t } = useTranslation();
-  
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    // Fetch user data from local storage
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser({
+        name: `${parsedUser.firstName} ${parsedUser.lastName}`,
+        email: parsedUser.email,
+      });
+    }
+  }, []);
+
   const handleLogout = () => {
-    // In a real app, implement actual logout logic here
+    // Clear user data and navigate to login
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
   
@@ -132,11 +147,13 @@ const DashboardLayout = () => {
                         <Button variant="ghost" className="w-full flex items-center justify-between px-2 py-5 h-auto">
                           <div className="flex items-center">
                             <Avatar className="h-8 w-8 mr-2">
-                              <AvatarFallback className="bg-brand-100 text-brand-700">JD</AvatarFallback>
+                              <AvatarFallback className="bg-brand-100 text-brand-700">
+                                {user?.name?.[0] || "U"}
+                              </AvatarFallback>
                             </Avatar>
                             <div className="text-left">
-                              <p className="text-sm font-medium">John Doe</p>
-                              <p className="text-xs text-gray-500">john@example.com</p>
+                              <p className="text-sm font-medium">{user?.name || "User"}</p>
+                              <p className="text-xs text-gray-500">{user?.email || "No email"}</p>
                             </div>
                           </div>
                           <ChevronDown size={16} />
@@ -196,11 +213,13 @@ const DashboardLayout = () => {
                 <Button variant="ghost" className="w-full flex items-center justify-between px-2 py-5 h-auto">
                   <div className="flex items-center">
                     <Avatar className="h-8 w-8 mr-2">
-                      <AvatarFallback className="bg-brand-100 text-brand-700">JD</AvatarFallback>
+                      <AvatarFallback className="bg-brand-100 text-brand-700">
+                        {user?.name?.[0] || "U"}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="text-left">
-                      <p className="text-sm font-medium">John Doe</p>
-                      <p className="text-xs text-gray-500">john@example.com</p>
+                      <p className="text-sm font-medium">{user?.name || "User"}</p>
+                      <p className="text-xs text-gray-500">{user?.email || "No email"}</p>
                     </div>
                   </div>
                   <ChevronDown size={16} />
