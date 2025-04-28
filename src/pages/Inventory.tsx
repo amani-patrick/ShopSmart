@@ -1,5 +1,5 @@
-
-import React, { useState, useRef } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,62 +42,10 @@ import {
 } from '@/components/ui/card';
 import { Search, Plus, Edit, Trash, Package, Upload, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Sample product images
-const defaultProductImages = [
-  'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-  'https://images.unsplash.com/photo-1514963629718-4f9795ee8c27?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-  'https://images.unsplash.com/photo-1517081719645-0456073ca84d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-];
-
-// Sample products data with added image URLs
-const initialProducts = [
-  {
-    id: 1,
-    name: 'Rice',
-    category: 'Grains',
-    quantity: 50,
-    unit: 'kg',
-    costPrice: 2.5,
-    sellingPrice: 3.5,
-    supplier: 'Global Foods Inc.',
-    stockAlert: 10,
-    lastRestocked: '2023-04-01',
-    image: defaultProductImages[0],
-  },
-  {
-    id: 2,
-    name: 'Sugar',
-    category: 'Sweeteners',
-    quantity: 30,
-    unit: 'kg',
-    costPrice: 1.8,
-    sellingPrice: 2.5,
-    supplier: 'Global Foods Inc.',
-    stockAlert: 5,
-    lastRestocked: '2023-04-05',
-    image: defaultProductImages[1],
-  },
-  {
-    id: 3,
-    name: 'Beans',
-    category: 'Legumes',
-    quantity: 25,
-    unit: 'kg',
-    costPrice: 3.2,
-    sellingPrice: 4.5,
-    supplier: 'Global Foods Inc.',
-    stockAlert: 8,
-    lastRestocked: '2023-04-10',
-    image: defaultProductImages[2],
-  },
-];
-
-// Sample categories
-const categories = ['Grains', 'Sweeteners', 'Legumes', 'Beverages', 'Snacks', 'Dairy'];
+import { getInventories, addInventoryItem, updateInventoryItem,getInventoryById,deleteInventoryItem } from '@/services/api';
 
 const Inventory = () => {
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showLowStock, setShowLowStock] = useState(false);
@@ -105,7 +53,7 @@ const Inventory = () => {
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [newProduct, setNewProduct] = useState({
     name: '',
     category: '',
@@ -114,152 +62,155 @@ const Inventory = () => {
     costPrice: 0,
     sellingPrice: 0,
     supplier: '',
-    stockAlert: 0,
-    lastRestocked: new Date().toISOString().split('T')[0],
+    stockAlertLevel: 0,
     image: '',
   });
-  
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
-  
+
+  // Fetch inventory data from the API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getInventories();
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching inventory:', error);
+        toast.error('Failed to fetch inventory. Please try again later.');
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   // Filter products based on search term, category, and stock level
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           product.supplier.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-    const matchesStock = showLowStock ? product.quantity <= product.stockAlert : true;
+    const matchesStock = showLowStock ? product.stockQuantity <= product.stockAlertLevel : true;
     
     return matchesSearch && matchesCategory && matchesStock;
   });
-  
-  // Handle file selection for new product
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setImagePreview(result);
-        setNewProduct({...newProduct, image: result});
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  // Handle file selection for editing product
-  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setEditImagePreview(result);
-        setNewProduct({...newProduct, image: result});
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  // Trigger file input click
-  const handleUploadClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-  
-  // Trigger file input click for edit
-  const handleEditUploadClick = () => {
-    if (editFileInputRef.current) {
-      editFileInputRef.current.click();
-    }
-  };
-  
+
   // Handle adding a new product
-  const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.category || newProduct.quantity < 0) {
+  const handleAddProduct = async () => {
+    // Validate required fields
+    if (
+      !newProduct.name ||
+      !newProduct.category ||
+      newProduct.quantity < 0 ||
+      !newProduct.unit ||
+      newProduct.costPrice <= 0 ||
+      newProduct.sellingPrice <= 0 ||
+      !newProduct.supplier ||
+      newProduct.stockAlertLevel < 0
+    ) {
       toast.error("Please fill all required fields correctly");
       return;
     }
-    
-    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-    
-    // Use a default image if none was uploaded
-    const productImage = newProduct.image || 'https://images.unsplash.com/photo-1553395572-53de71bbcfe7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
-    
-    setProducts([...products, { ...newProduct, id: newId, image: productImage }]);
-    setNewProduct({
-      name: '',
-      category: '',
-      quantity: 0,
-      unit: 'kg',
-      costPrice: 0,
-      sellingPrice: 0,
-      supplier: '',
-      stockAlert: 0,
-      lastRestocked: new Date().toISOString().split('T')[0],
-      image: '',
-    });
-    
-    setImagePreview(null);
-    setIsAddDialogOpen(false);
-    toast.success("Product added successfully");
-  };
   
+    try {
+      // Call the API to add the product
+      const addedProduct = await addInventoryItem(newProduct);
+  
+      // Update the products state with the new product
+      setProducts([...products, addedProduct]);
+  
+      // Reset the form
+      setNewProduct({
+        name: '',
+        category: '',
+        quantity: 0,
+        unit: 'kg',
+        costPrice: 0,
+        sellingPrice: 0,
+        supplier: '',
+        stockAlertLevel: 0,
+        image: '',
+      });
+      setImagePreview(null);
+      setIsAddDialogOpen(false);
+  
+      toast.success("Product added successfully");
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast.error('Failed to add product. Please try again.');
+    }
+  };
+
   // Handle editing a product
-  const handleEditProduct = () => {
+  const handleEditProduct = async () => {
     if (!editingProductId) return;
-    
-    setProducts(products.map(product => 
-      product.id === editingProductId ? { ...newProduct, id: editingProductId } : product
-    ));
-    
-    setEditingProductId(null);
-    setNewProduct({
-      name: '',
-      category: '',
-      quantity: 0,
-      unit: 'kg',
-      costPrice: 0,
-      sellingPrice: 0,
-      supplier: '',
-      stockAlert: 0,
-      lastRestocked: new Date().toISOString().split('T')[0],
-      image: '',
-    });
-    
-    setEditImagePreview(null);
-    toast.success("Product updated successfully");
+
+    try {
+      const updatedProduct = await updateInventoryItem(editingProductId, newProduct); // Call the API function to update the product
+      setProducts(
+        products.map((product) =>
+          product.id === editingProductId ? updatedProduct : product
+        )
+      );
+      setEditingProductId(null);
+      setNewProduct({
+        name: "",
+        category: "",
+        quantity: 0,
+        unit: "kg",
+        costPrice: 0,
+        sellingPrice: 0,
+        supplier: "",
+        stockAlertLevel: 0,
+        image: "",
+      });
+      setEditImagePreview(null);
+      toast.success("Product updated successfully");
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("Failed to update product. Please try again.");
+    }
   };
-  
+
   // Start editing a product
-  const startEditing = (product: typeof initialProducts[0]) => {
-    setEditingProductId(product.id);
-    setNewProduct({
-      name: product.name,
-      category: product.category,
-      quantity: product.quantity,
-      unit: product.unit,
-      costPrice: product.costPrice,
-      sellingPrice: product.sellingPrice,
-      supplier: product.supplier,
-      stockAlert: product.stockAlert,
-      lastRestocked: product.lastRestocked,
-      image: product.image,
-    });
-    setEditImagePreview(product.image);
+  const startEditing = async (product: any) => {
+    try {
+      const fullProductDetails = await getInventoryById(product.id); // Fetch full product details
+      setEditingProductId(product.id);
+      setNewProduct({
+        name: fullProductDetails.name,
+        category: fullProductDetails.category,
+        quantity: fullProductDetails.stockQuantity,
+        unit: fullProductDetails.unit,
+        costPrice: fullProductDetails.costPrice,
+        sellingPrice: fullProductDetails.sellingPrice,
+        supplier: fullProductDetails.supplier,
+        stockAlertLevel: fullProductDetails.stockAlertLevel,
+        image: fullProductDetails.imageUrl || "",
+      });
+      setEditImagePreview(fullProductDetails.imageUrl || null);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      toast.error("Failed to load product details. Please try again.");
+    }
   };
-  
+
   // Handle deleting a product
-  const handleDeleteProduct = (id: number) => {
-    setProducts(products.filter(product => product.id !== id));
-    toast.success("Product removed successfully");
+  const handleDeleteProduct = async (id: number) => {
+        try {
+      await deleteInventoryItem(id); 
+      setProducts(products.filter((product) => product.id !== id));
+      toast.success("Product removed successfully");
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("Failed to delete product. Please try again.");
+    }
   };
-  
-  // Check if product is low on stock
-  const isLowStock = (product: typeof initialProducts[0]) => {
-    return product.quantity <= product.stockAlert;
+
+
+  const isLowStock = (product: any) => {
+    return product.stockQuantity <= product.stockAlertLevel;
   };
-  
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -270,7 +221,7 @@ const Inventory = () => {
             Track your stock levels, add new products, and manage inventory.
           </p>
         </div>
-        
+
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -278,7 +229,7 @@ const Inventory = () => {
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
+          <DialogContent className="sm:max-w-[600px] max-h-screen overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add Product</DialogTitle>
               <DialogDescription>
@@ -286,7 +237,99 @@ const Inventory = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {/* Product Image Upload */}
+              {/* Product Name */}
+              <div className="grid gap-2">
+                <Label htmlFor="product-name">Product Name*</Label>
+                <Input
+                  id="product-name"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  placeholder="Enter product name"
+                />
+              </div>
+
+              {/* Category */}
+              <div className="grid gap-2">
+                <Label htmlFor="product-category">Category*</Label>
+                <Input
+                  id="product-category"
+                  value={newProduct.category}
+                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                  placeholder="Enter product category"
+                />
+              </div>
+
+              {/* Quantity and Unit */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="product-quantity">Quantity*</Label>
+                  <Input
+                    id="product-quantity"
+                    type="number"
+                    value={newProduct.quantity}
+                    onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value, 10) })}
+                    placeholder="Enter quantity"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="product-unit">Unit*</Label>
+                  <Input
+                    id="product-unit"
+                    value={newProduct.unit}
+                    onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+                    placeholder="e.g., kg, pcs"
+                  />
+                </div>
+              </div>
+
+              {/* Cost Price and Selling Price */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="product-cost-price">Cost Price*</Label>
+                  <Input
+                    id="product-cost-price"
+                    type="number"
+                    value={newProduct.costPrice}
+                    onChange={(e) => setNewProduct({ ...newProduct, costPrice: parseFloat(e.target.value) })}
+                    placeholder="Enter cost price"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="product-selling-price">Selling Price*</Label>
+                  <Input
+                    id="product-selling-price"
+                    type="number"
+                    value={newProduct.sellingPrice}
+                    onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: parseFloat(e.target.value) })}
+                    placeholder="Enter selling price"
+                  />
+                </div>
+              </div>
+
+              {/* Supplier */}
+              <div className="grid gap-2">
+                <Label htmlFor="product-supplier">Supplier*</Label>
+                <Input
+                  id="product-supplier"
+                  value={newProduct.supplier}
+                  onChange={(e) => setNewProduct({ ...newProduct, supplier: e.target.value })}
+                  placeholder="Enter supplier name"
+                />
+              </div>
+
+              {/* Stock Alert Level */}
+              <div className="grid gap-2">
+                <Label htmlFor="product-stock-alert-level">Stock Alert Level*</Label>
+                <Input
+                  id="product-stock-alert-level"
+                  type="number"
+                  value={newProduct.stockAlertLevel}
+                  onChange={(e) => setNewProduct({ ...newProduct, stockAlertLevel: parseInt(e.target.value, 10) })}
+                  placeholder="Enter stock alert level"
+                />
+              </div>
+
+              {/* Product Image */}
               <div className="grid gap-2">
                 <Label htmlFor="product-image">Product Image</Label>
                 <div className="flex flex-col items-center justify-center gap-4">
@@ -303,7 +346,7 @@ const Inventory = () => {
                         className="absolute top-2 right-2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-1"
                         onClick={() => {
                           setImagePreview(null);
-                          setNewProduct({...newProduct, image: ''});
+                          setNewProduct({ ...newProduct, image: '' });
                         }}
                       >
                         <Trash className="h-4 w-4" />
@@ -312,7 +355,7 @@ const Inventory = () => {
                   ) : (
                     <div 
                       className="flex flex-col items-center justify-center w-40 h-40 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100"
-                      onClick={handleUploadClick}
+                      onClick={() => fileInputRef.current?.click()}
                     >
                       <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
                       <p className="text-sm text-gray-500">Click to upload</p>
@@ -323,145 +366,27 @@ const Inventory = () => {
                     ref={fileInputRef} 
                     className="hidden" 
                     accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                  <Button 
-                    variant="outline" 
-                    type="button"
-                    className="w-fit"
-                    onClick={handleUploadClick}
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Image
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Product Name*</Label>
-                  <Input 
-                    id="name" 
-                    value={newProduct.name} 
-                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                    placeholder="Product name"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="category">Category*</Label>
-                  <select
-                    id="category"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                    value={newProduct.category}
-                    onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                  >
-                    <option value="">Select category</option>
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="quantity">Quantity*</Label>
-                  <Input 
-                    id="quantity" 
-                    type="number" 
-                    value={newProduct.quantity} 
-                    onChange={(e) => setNewProduct({...newProduct, quantity: Number(e.target.value)})}
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="unit">Unit</Label>
-                  <select
-                    id="unit"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                    value={newProduct.unit}
-                    onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})}
-                  >
-                    <option value="kg">Kilogram (kg)</option>
-                    <option value="g">Gram (g)</option>
-                    <option value="l">Liter (l)</option>
-                    <option value="ml">Milliliter (ml)</option>
-                    <option value="pcs">Pieces (pcs)</option>
-                    <option value="box">Box</option>
-                    <option value="pack">Pack</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="costPrice">Cost Price</Label>
-                  <Input 
-                    id="costPrice" 
-                    type="number" 
-                    value={newProduct.costPrice} 
-                    onChange={(e) => setNewProduct({...newProduct, costPrice: Number(e.target.value)})}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="sellingPrice">Selling Price*</Label>
-                  <Input 
-                    id="sellingPrice" 
-                    type="number" 
-                    value={newProduct.sellingPrice} 
-                    onChange={(e) => setNewProduct({...newProduct, sellingPrice: Number(e.target.value)})}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="supplier">Supplier</Label>
-                  <Input 
-                    id="supplier" 
-                    value={newProduct.supplier} 
-                    onChange={(e) => setNewProduct({...newProduct, supplier: e.target.value})}
-                    placeholder="Supplier name"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="stockAlert">Stock Alert Level</Label>
-                  <Input 
-                    id="stockAlert" 
-                    type="number" 
-                    value={newProduct.stockAlert} 
-                    onChange={(e) => setNewProduct({...newProduct, stockAlert: Number(e.target.value)})}
-                    placeholder="0"
-                    min="0"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const result = reader.result as string;
+                          setImagePreview(result);
+                          reader.onloadend = () => {
+                            setNewProduct({ ...newProduct, image: reader.result as string });
+                          };
+                          reader.readAsDataURL(file);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
                   />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setIsAddDialogOpen(false);
-                setImagePreview(null);
-                setNewProduct({
-                  name: '',
-                  category: '',
-                  quantity: 0,
-                  unit: 'kg',
-                  costPrice: 0,
-                  sellingPrice: 0,
-                  supplier: '',
-                  stockAlert: 0,
-                  lastRestocked: new Date().toISOString().split('T')[0],
-                  image: '',
-                });
-              }}>
+              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleAddProduct}>
@@ -471,24 +396,69 @@ const Inventory = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Edit Dialog */}
-        <Dialog open={!!editingProductId} onOpenChange={(open) => {
-          if (!open) {
-            setEditingProductId(null);
-            setEditImagePreview(null);
-          }
-        }}>
-          <DialogContent className="sm:max-w-[550px]">
+        <Dialog open={!!editingProductId} onOpenChange={() => setEditingProductId(null)}>
+          <DialogContent className="sm:max-w-[550px] max-h-screen overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Product</DialogTitle>
               <DialogDescription>
-                Update the details of this product. Click save when you're done.
+                Update the details of your product. Click save when you're done.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {/* Edit Product Image Upload */}
+              <Label htmlFor="product-name">Product Name</Label>
+              <Input
+                id="product-name"
+                value={newProduct.name}
+                onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+              />
+              <Label htmlFor="product-category">Category</Label>
+              <Input
+                id="product-category"
+                value={newProduct.category}
+                onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+              />
+              <Label htmlFor="product-quantity">Quantity</Label>
+              <Input
+                id="product-quantity"
+                type="number"
+                value={newProduct.quantity}
+                onChange={(e) => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value, 10) })}
+              />
+              <Label htmlFor="product-unit">Unit</Label>
+              <Input
+                id="product-unit"
+                value={newProduct.unit}
+                onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+              />
+              <Label htmlFor="product-cost-price">Cost Price</Label>
+              <Input
+                id="product-cost-price"
+                type="number"
+                value={newProduct.costPrice}
+                onChange={(e) => setNewProduct({ ...newProduct, costPrice: parseFloat(e.target.value) })}
+              />
+              <Label htmlFor="product-selling-price">Selling Price</Label>
+              <Input
+                id="product-selling-price"
+                type="number"
+                value={newProduct.sellingPrice}
+                onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: parseFloat(e.target.value) })}
+              />
+              <Label htmlFor="product-supplier">Supplier</Label>
+              <Input
+                id="product-supplier"
+                value={newProduct.supplier}
+                onChange={(e) => setNewProduct({ ...newProduct, supplier: e.target.value })}
+              />
+              <Label htmlFor="product-stock-alert-level">Stock Alert Level</Label>
+              <Input
+                id="product-stock-alert-level"
+                type="number"
+                value={newProduct.stockAlertLevel}
+                onChange={(e) => setNewProduct({ ...newProduct, stockAlertLevel: parseInt(e.target.value, 10) })}
+              />
               <div className="grid gap-2">
-                <Label htmlFor="edit-product-image">Product Image</Label>
+                <Label htmlFor="product-image">Product Image</Label>
                 <div className="flex flex-col items-center justify-center gap-4">
                   {editImagePreview ? (
                     <div className="relative rounded-md overflow-hidden w-40 h-40 border border-gray-200">
@@ -503,7 +473,7 @@ const Inventory = () => {
                         className="absolute top-2 right-2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-1"
                         onClick={() => {
                           setEditImagePreview(null);
-                          setNewProduct({...newProduct, image: ''});
+                          setNewProduct({ ...newProduct, image: '' });
                         }}
                       >
                         <Trash className="h-4 w-4" />
@@ -512,7 +482,7 @@ const Inventory = () => {
                   ) : (
                     <div 
                       className="flex flex-col items-center justify-center w-40 h-40 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100"
-                      onClick={handleEditUploadClick}
+                      onClick={() => editFileInputRef.current?.click()}
                     >
                       <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
                       <p className="text-sm text-gray-500">Click to upload</p>
@@ -523,119 +493,18 @@ const Inventory = () => {
                     ref={editFileInputRef} 
                     className="hidden" 
                     accept="image/*"
-                    onChange={handleEditFileChange}
-                  />
-                  <Button 
-                    variant="outline" 
-                    type="button"
-                    className="w-fit"
-                    onClick={handleEditUploadClick}
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Image
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-name">Product Name*</Label>
-                  <Input 
-                    id="edit-name" 
-                    value={newProduct.name} 
-                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-category">Category*</Label>
-                  <select
-                    id="edit-category"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                    value={newProduct.category}
-                    onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                  >
-                    <option value="">Select category</option>
-                    {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              </div>
-              
-              {/* Same fields as in the Add dialog */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-quantity">Quantity*</Label>
-                  <Input 
-                    id="edit-quantity" 
-                    type="number" 
-                    value={newProduct.quantity} 
-                    onChange={(e) => setNewProduct({...newProduct, quantity: Number(e.target.value)})}
-                    min="0"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-unit">Unit</Label>
-                  <select
-                    id="edit-unit"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                    value={newProduct.unit}
-                    onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})}
-                  >
-                    <option value="kg">Kilogram (kg)</option>
-                    <option value="g">Gram (g)</option>
-                    <option value="l">Liter (l)</option>
-                    <option value="ml">Milliliter (ml)</option>
-                    <option value="pcs">Pieces (pcs)</option>
-                    <option value="box">Box</option>
-                    <option value="pack">Pack</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-costPrice">Cost Price</Label>
-                  <Input 
-                    id="edit-costPrice" 
-                    type="number" 
-                    value={newProduct.costPrice} 
-                    onChange={(e) => setNewProduct({...newProduct, costPrice: Number(e.target.value)})}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-sellingPrice">Selling Price*</Label>
-                  <Input 
-                    id="edit-sellingPrice" 
-                    type="number" 
-                    value={newProduct.sellingPrice} 
-                    onChange={(e) => setNewProduct({...newProduct, sellingPrice: Number(e.target.value)})}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-supplier">Supplier</Label>
-                  <Input 
-                    id="edit-supplier" 
-                    value={newProduct.supplier} 
-                    onChange={(e) => setNewProduct({...newProduct, supplier: e.target.value})}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-stockAlert">Stock Alert Level</Label>
-                  <Input 
-                    id="edit-stockAlert" 
-                    type="number" 
-                    value={newProduct.stockAlert} 
-                    onChange={(e) => setNewProduct({...newProduct, stockAlert: Number(e.target.value)})}
-                    min="0"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const result = reader.result as string;
+                          setEditImagePreview(result);
+                          setNewProduct({ ...newProduct, image: result });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -644,67 +513,11 @@ const Inventory = () => {
               <Button variant="outline" onClick={() => setEditingProductId(null)}>
                 Cancel
               </Button>
-              <Button onClick={handleEditProduct}>
-                Save Changes
-              </Button>
+              <Button onClick={handleEditProduct}>Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
-
-      {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <select
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background w-full sm:w-[180px]"
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-        >
-          <option value="all">All Categories</option>
-          {categories.map(category => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="lowStock"
-            checked={showLowStock}
-            onChange={(e) => setShowLowStock(e.target.checked)}
-            className="rounded border-gray-300"
-          />
-          <Label htmlFor="lowStock">Low Stock Only</Label>
-        </div>
-      </div>
-
-      {/* Low Stock Alert */}
-      {products.some(isLowStock) && (
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-yellow-800 text-lg">Low Stock Alert</CardTitle>
-            <CardDescription className="text-yellow-700">
-              Some products are running low on stock. Consider restocking soon.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1">
-              {products.filter(isLowStock).map(product => (
-                <li key={product.id} className="text-sm text-yellow-800">
-                  <span className="font-medium">{product.name}:</span> {product.quantity} {product.unit} left (Alert level: {product.stockAlert})
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Products Table */}
       <Card>
@@ -743,10 +556,10 @@ const Inventory = () => {
                     <TableRow key={product.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
-                          {product.image && (
+                          {product.imageUrl && (
                             <div className="rounded-md overflow-hidden w-10 h-10 flex-shrink-0">
                               <img 
-                                src={product.image} 
+                                src={product.imageUrl} 
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                               />
@@ -758,7 +571,7 @@ const Inventory = () => {
                       <TableCell>{product.category}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {product.quantity} {product.unit}
+                          {product.stockQuantity} {product.unit}
                           {isLowStock(product) && (
                             <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200">Low</Badge>
                           )}

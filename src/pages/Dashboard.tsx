@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,10 +15,78 @@ import {
   BarChart 
 } from 'lucide-react';
 import { BarChartComponent, LineChartComponent } from '@/components/Charts';
+import { getSales, getDebts, getInventoryByCategory,getInventories } from '@/services/api';
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  
+
+  // State for dynamic data
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
+  const [activeInventory, setActiveInventory] = useState(0);
+  const [activeDebts, setActiveDebts] = useState(0);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch sales data
+        const sales = await getSales();
+        const revenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+        const salesCount = sales.length;
+
+        setTotalRevenue(revenue);
+        setTotalSales(salesCount);
+
+        // Fetch inventory data
+        const inventory = await getInventories(); 
+        const inventoryCount = inventory.reduce((sum, item) => sum + item.stockQuantity, 0);
+
+        setActiveInventory(inventoryCount);
+
+        // Fetch debts data
+        const debts = await getDebts();
+        const unpaidDebts = debts.filter((debt) => !debt.paid); // Filter out paid debts
+        const totalUnpaidDebts = unpaidDebts.reduce((sum, debt) => sum + debt.amount, 0);
+
+        setActiveDebts(totalUnpaidDebts);
+
+        // Fetch recent activities
+        const recentSales = sales
+          .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime()) // Sort by latest saleDate
+          .slice(0, 3) // Get the latest 3 sales
+          .map((sale) => ({
+            type: 'sale',
+            description: `${sale.quantitySold} items sold for $${sale.totalAmount.toFixed(2)}`,
+            time: new Date(sale.saleDate).toLocaleString(),
+          }));
+
+        const recentDebts = debts
+          .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()) // Sort by latest createdDate
+          .slice(0, 2) // Get the latest 2 debts
+          .map((debt) => ({
+            type: 'debt',
+            description: `$${debt.amount.toFixed(2)} debt for ${debt.customerName}`,
+            time: new Date(debt.createdDate).toLocaleString(),
+          }));
+
+        const recentInventory = inventory
+          .slice(-3) // Get the last 3 items in the array
+          .map((item) => ({
+            type: 'inventory',
+            description: `Added ${item.stockQuantity} ${item.unit} of ${item.name} to inventory`,
+            time: 'N/A', // No date available
+          }));
+
+        setRecentActivity([...recentSales, ...recentDebts, ...recentInventory]);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -42,7 +111,7 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$15,231.89</div>
+            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-500 flex items-center">
                 +20.1% <ArrowUp className="h-3 w-3 ml-1" />
@@ -56,7 +125,7 @@ const Dashboard = () => {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+573</div>
+            <div className="text-2xl font-bold">{totalSales}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-500 flex items-center">
                 +8.2% <ArrowUp className="h-3 w-3 ml-1" />
@@ -70,7 +139,7 @@ const Dashboard = () => {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">345 {t('dashboard.items')}</div>
+            <div className="text-2xl font-bold">{activeInventory} {t('dashboard.items')}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-red-500 flex items-center">
                 -3.2% <ArrowDown className="h-3 w-3 ml-1" />
@@ -84,7 +153,7 @@ const Dashboard = () => {
             <Clock3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$2,350.00</div>
+            <div className="text-2xl font-bold">${activeDebts.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-red-500 flex items-center">
                 +12.5% <ArrowUp className="h-3 w-3 ml-1" />
@@ -166,61 +235,22 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Activity 1 */}
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="flex items-center">
-                <div className="mr-4 bg-brand-100 p-2 rounded-full">
-                  <ShoppingCart className="h-4 w-4 text-brand-600" />
+            {recentActivity.map((activity, index) => (
+              <div key={index} className="flex items-center justify-between border-b pb-4">
+                <div className="flex items-center">
+                  <div className={`mr-4 p-2 rounded-full ${activity.type === 'sale' ? 'bg-brand-100' : activity.type === 'inventory' ? 'bg-green-100' : activity.type === 'debt' ? 'bg-amber-100' : 'bg-red-100'}`}>
+                    {activity.type === 'sale' && <ShoppingCart className="h-4 w-4 text-brand-600" />}
+                    {activity.type === 'inventory' && <Package className="h-4 w-4 text-green-600" />}
+                    {activity.type === 'debt' && <Clock3 className="h-4 w-4 text-amber-600" />}
+                  </div>
+                  <div>
+                    <p className="font-medium">{activity.type === 'sale' ? 'Sale completed' : activity.type === 'inventory' ? 'Inventory updated' : 'New debt recorded'}</p>
+                    <p className="text-sm text-muted-foreground">{activity.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">Sale completed</p>
-                  <p className="text-sm text-muted-foreground">3 items sold for $152.00</p>
-                </div>
+                <div className="text-sm text-muted-foreground">{activity.time}</div>
               </div>
-              <div className="text-sm text-muted-foreground">2 hours ago</div>
-            </div>
-            
-            {/* Activity 2 */}
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="flex items-center">
-                <div className="mr-4 bg-green-100 p-2 rounded-full">
-                  <Package className="h-4 w-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Inventory updated</p>
-                  <p className="text-sm text-muted-foreground">Added 24 new items to inventory</p>
-                </div>
-              </div>
-              <div className="text-sm text-muted-foreground">5 hours ago</div>
-            </div>
-            
-            {/* Activity 3 */}
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="flex items-center">
-                <div className="mr-4 bg-amber-100 p-2 rounded-full">
-                  <Clock3 className="h-4 w-4 text-amber-600" />
-                </div>
-                <div>
-                  <p className="font-medium">New debt recorded</p>
-                  <p className="text-sm text-muted-foreground">$85.00 debt for John Doe</p>
-                </div>
-              </div>
-              <div className="text-sm text-muted-foreground">Yesterday</div>
-            </div>
-            
-            {/* Activity 4 */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="mr-4 bg-red-100 p-2 rounded-full">
-                  <Package className="h-4 w-4 text-red-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Low stock alert</p>
-                  <p className="text-sm text-muted-foreground">Rice (5kg) is running low on stock</p>
-                </div>
-              </div>
-              <div className="text-sm text-muted-foreground">Yesterday</div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>

@@ -1,4 +1,4 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,111 +20,126 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Search, BadgeDollarSign, Calendar, Clock, User, AlertCircle, Bell } from 'lucide-react';
+import { Search, BadgeDollarSign, Calendar, Clock, AlertCircle, Bell } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Sample debts data (normally would be derived from credit sales)
-const initialDebts = [
-  {
-    id: 1,
-    customerName: 'John Doe',
-    amount: 35.00,
-    date: '2023-04-10',
-    dueDate: '2023-04-20',
-    items: [{ name: 'Rice', quantity: 10, unit: 'kg', price: 3.5, total: 35 }],
-    status: 'pending',
-    notified: false
-  },
-  {
-    id: 2,
-    customerName: 'Sarah Williams',
-    amount: 45.50,
-    date: '2023-04-05',
-    dueDate: '2023-04-15',
-    items: [
-      { name: 'Sugar', quantity: 5, unit: 'kg', price: 2.5, total: 12.5 },
-      { name: 'Beans', quantity: 5, unit: 'kg', price: 4.5, total: 22.5 },
-      { name: 'Salt', quantity: 2, unit: 'kg', price: 5.25, total: 10.5 }
-    ],
-    status: 'pending',
-    notified: true
-  },
-  {
-    id: 3,
-    customerName: 'Michael Johnson',
-    amount: 67.25,
-    date: '2023-03-28',
-    dueDate: '2023-04-07',
-    items: [
-      { name: 'Rice', quantity: 15, unit: 'kg', price: 3.5, total: 52.5 },
-      { name: 'Sugar', quantity: 3, unit: 'kg', price: 2.5, total: 7.5 },
-      { name: 'Salt', quantity: 1, unit: 'kg', price: 7.25, total: 7.25 }
-    ],
-    status: 'overdue',
-    notified: true
-  },
-  {
-    id: 4,
-    customerName: 'Linda Brown',
-    amount: 23.75,
-    date: '2023-04-01',
-    dueDate: '2023-04-08',
-    items: [
-      { name: 'Beans', quantity: 3, unit: 'kg', price: 4.5, total: 13.5 },
-      { name: 'Sugar', quantity: 2, unit: 'kg', price: 2.5, total: 5 },
-      { name: 'Salt', quantity: 1, unit: 'kg', price: 5.25, total: 5.25 }
-    ],
-    status: 'overdue',
-    notified: false
-  }
-];
+import { getDebts, updateDebt, getDebtById } from '@/services/api';
 
 const Debts = () => {
-  const [debts, setDebts] = useState(initialDebts);
+  const [debts, setDebts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState<'dueDate' | 'amount' | 'customerName'>('dueDate');
   const [expandedDebtId, setExpandedDebtId] = useState<number | null>(null);
-  
-  // Check for overdue debts on component mount
+  const [selectedDebt, setSelectedDebt] = useState<any | null>(null); // State for the selected debt details
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false); // Loading state for fetching debt details
+
+  // Fetch debts data from the API
   useEffect(() => {
+    const fetchDebts = async () => {
+      try {
+        const data = await getDebts();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Update status of overdue debts
+        const updatedDebts = data.map((debt) => {
+          const dueDate = new Date(debt.dueDate);
+          if (!debt.paid && dueDate < today) {
+            return { ...debt, status: 'overdue' };
+          }
+          return { ...debt, status: debt.paid ? 'paid' : 'pending' };
+        });
+
+        setDebts(updatedDebts);
+
+        // Show notification for overdue debts
+        const overdueDebts = updatedDebts.filter((debt) => debt.status === 'overdue');
+        if (overdueDebts.length > 0) {
+          toast.error(`You have ${overdueDebts.length} overdue debt(s)!`, {
+            description: "Some customers have not paid within the agreed time.",
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching debts:', error);
+        toast.error('Failed to fetch debts. Please try again later.');
+      }
+    };
+
+    fetchDebts();
+  }, []);
+
+  // Fetch details of a specific debt
+  const fetchDebtDetails = async (id: number) => {
+    try {
+      setIsLoadingDetails(true);
+      const debtDetails = await getDebtById(id); // Fetch debt details using the API
+      setSelectedDebt(debtDetails);
+      setExpandedDebtId(id);
+    } catch (error) {
+      console.error('Error fetching debt details:', error);
+      toast.error('Failed to fetch debt details. Please try again.');
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
+
+  // Close the details dialog
+  const closeDetailsDialog = () => {
+    setExpandedDebtId(null);
+    setSelectedDebt(null);
+  };
+
+  // Mark debt as paid
+  const markAsPaid = async (id: number) => {
+    try {
+      const debtToUpdate = debts.find((debt) => debt.id === id);
+      if (!debtToUpdate) return;
+
+      await updateDebt(id, { ...debtToUpdate, paid: true }); // Call the API to update the debt
+      const updatedDebts = debts.map((debt) =>
+        debt.id === id ? { ...debt, status: 'paid', paid: true } : debt
+      );
+      setDebts(updatedDebts);
+      toast.success('Debt marked as paid!');
+    } catch (error) {
+      console.error('Error marking debt as paid:', error);
+      toast.error('Failed to mark debt as paid. Please try again.');
+    }
+  };
+
+
+  // Toggle expanded view for a debt
+  const toggleExpand = (id: number) => {
+    if (expandedDebtId === id) {
+      // Hide details
+      setExpandedDebtId(null);
+      setSelectedDebt(null);
+    } else {
+      // Show details
+      fetchDebtDetails(id);
+    }
+  };
+
+  // Calculate days until due or overdue days
+  const getDueDays = (dueDate: string) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    // Find overdue debts that are still marked as pending
-    const overdueDebts = debts.filter(debt => {
-      const dueDate = new Date(debt.dueDate);
-      return debt.status === 'pending' && dueDate < today;
-    });
-    
-    if (overdueDebts.length > 0) {
-      // Update status of overdue debts
-      const updatedDebts = debts.map(debt => {
-        const dueDate = new Date(debt.dueDate);
-        if (debt.status === 'pending' && dueDate < today) {
-          return { ...debt, status: 'overdue' };
-        }
-        return debt;
-      });
-      
-      setDebts(updatedDebts);
-      
-      // Show notification for overdue debts
-      toast.error(`You have ${overdueDebts.length} overdue debt(s)!`, {
-        description: "Some customers have not paid within the agreed time.",
-        duration: 5000,
-      });
-    }
-  }, []);
-  
+    const due = new Date(dueDate);
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+  };
+
   // Filter debts based on search and status
-  const filteredDebts = debts.filter(debt => {
+  const filteredDebts = debts.filter((debt) => {
     const matchesSearch = debt.customerName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || debt.status === filterStatus;
-    
+
     return matchesSearch && matchesStatus;
   });
-  
+
   // Sort filtered debts
   const sortedDebts = [...filteredDebts].sort((a, b) => {
     if (sortBy === 'dueDate') {
@@ -135,41 +150,7 @@ const Debts = () => {
       return a.customerName.localeCompare(b.customerName);
     }
   });
-  
-  // Mark debt as paid
-  const markAsPaid = (id: number) => {
-    const updatedDebts = debts.map(debt => 
-      debt.id === id ? { ...debt, status: 'paid' } : debt
-    );
-    setDebts(updatedDebts);
-    toast.success("Debt marked as paid!");
-  };
-  
-  // Send reminder notification
-  const sendReminder = (id: number) => {
-    const updatedDebts = debts.map(debt => 
-      debt.id === id ? { ...debt, notified: true } : debt
-    );
-    setDebts(updatedDebts);
-    toast.success("Payment reminder sent to customer!");
-  };
-  
-  // Toggle expanded view for a debt
-  const toggleExpand = (id: number) => {
-    setExpandedDebtId(expandedDebtId === id ? null : id);
-  };
-  
-  // Calculate days until due or overdue days
-  const getDueDays = (dueDate: string) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const due = new Date(dueDate);
-    const diffTime = due.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return diffDays;
-  };
-  
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -179,7 +160,7 @@ const Debts = () => {
           Track customer credit, set payment deadlines, and manage debts.
         </p>
       </div>
-      
+
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -189,10 +170,10 @@ const Debts = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${debts.filter(d => d.status !== 'paid').reduce((sum, debt) => sum + debt.amount, 0).toFixed(2)}
+              ${debts.filter((d) => d.status !== 'paid').reduce((sum, debt) => sum + debt.amount, 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">
-              From {debts.filter(d => d.status !== 'paid').length} unpaid debts
+              From {debts.filter((d) => d.status !== 'paid').length} unpaid debts
             </p>
           </CardContent>
         </Card>
@@ -203,10 +184,10 @@ const Debts = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">
-              ${debts.filter(d => d.status === 'overdue').reduce((sum, debt) => sum + debt.amount, 0).toFixed(2)}
+              ${debts.filter((d) => d.status === 'overdue').reduce((sum, debt) => sum + debt.amount, 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {debts.filter(d => d.status === 'overdue').length} overdue debts
+              {debts.filter((d) => d.status === 'overdue').length} overdue debts
             </p>
           </CardContent>
         </Card>
@@ -217,47 +198,15 @@ const Debts = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-500">
-              ${debts.filter(d => d.status === 'pending' && getDueDays(d.dueDate) <= 3 && getDueDays(d.dueDate) >= 0).reduce((sum, debt) => sum + debt.amount, 0).toFixed(2)}
+              ${debts.filter((d) => d.status === 'pending' && getDueDays(d.dueDate) <= 3 && getDueDays(d.dueDate) >= 0).reduce((sum, debt) => sum + debt.amount, 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {debts.filter(d => d.status === 'pending' && getDueDays(d.dueDate) <= 3 && getDueDays(d.dueDate) >= 0).length} debts due within 3 days
+              {debts.filter((d) => d.status === 'pending' && getDueDays(d.dueDate) <= 3 && getDueDays(d.dueDate) >= 0).length} debts due within 3 days
             </p>
           </CardContent>
         </Card>
       </div>
-      
-      {/* Search and filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by customer name..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <select
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background w-full sm:w-[140px]"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="overdue">Overdue</option>
-          <option value="paid">Paid</option>
-        </select>
-        <select
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background w-full sm:w-[180px]"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as 'dueDate' | 'amount' | 'customerName')}
-        >
-          <option value="dueDate">Sort by Due Date</option>
-          <option value="amount">Sort by Amount</option>
-          <option value="customerName">Sort by Customer</option>
-        </select>
-      </div>
-      
+
       {/* Debts List */}
       <div className="space-y-4">
         {sortedDebts.length === 0 ? (
@@ -315,7 +264,7 @@ const Debts = () => {
                       </span>
                       <span className="flex items-center">
                         <Calendar className="h-3.5 w-3.5 mr-1" />
-                        Created: {debt.date}
+                        Created: {debt.createdDate}
                       </span>
                       <span className="flex items-center">
                         <Clock className="h-3.5 w-3.5 mr-1" />
@@ -326,10 +275,6 @@ const Debts = () => {
                   <div className="flex gap-2 self-end sm:self-center">
                     {debt.status !== 'paid' && (
                       <>
-                        <Button variant="outline" size="sm" onClick={() => sendReminder(debt.id)} disabled={debt.notified}>
-                          {debt.notified ? 'Reminded' : 'Send Reminder'}
-                          <Bell className="ml-1 h-3.5 w-3.5" />
-                        </Button>
                         <Button variant="default" size="sm" onClick={() => markAsPaid(debt.id)}>
                           Mark as Paid
                         </Button>
@@ -342,64 +287,45 @@ const Debts = () => {
                 </div>
               </CardHeader>
               
-              {expandedDebtId === debt.id && (
+              {expandedDebtId === debt.id && selectedDebt && (
                 <CardContent>
-                  <Separator className="my-2" />
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Items Purchased:</h4>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Item</TableHead>
-                            <TableHead>Quantity</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {debt.items.map((item, idx) => (
-                            <TableRow key={idx}>
-                              <TableCell>{item.name}</TableCell>
-                              <TableCell>{item.quantity} {item.unit}</TableCell>
-                              <TableCell>${item.price.toFixed(2)}</TableCell>
-                              <TableCell className="text-right">${item.total.toFixed(2)}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                    
-                    <div className="bg-muted/30 p-3 rounded-md">
-                      <div className="font-medium text-sm mb-1">Payment Status</div>
-                      <div className="flex flex-col sm:flex-row gap-y-2 sm:gap-x-6 text-sm">
+                  {isLoadingDetails ? (
+                    <p>Loading details...</p>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <span className="font-medium mr-1">Due in:</span>
-                          <span className={
-                            debt.status === 'paid' 
-                              ? 'text-green-600' 
-                              : getDueDays(debt.dueDate) < 0 
-                                ? 'text-destructive font-medium' 
-                                : getDueDays(debt.dueDate) <= 3 
-                                  ? 'text-orange-600 font-medium'
-                                  : ''
-                          }>
-                            {debt.status === 'paid' 
-                              ? 'Paid' 
-                              : getDueDays(debt.dueDate) < 0 
-                                ? `${Math.abs(getDueDays(debt.dueDate))} days overdue` 
-                                : getDueDays(debt.dueDate) === 0 
-                                  ? 'Due today'
-                                  : `${getDueDays(debt.dueDate)} days`}
-                          </span>
+                          <p className="text-sm font-medium text-muted-foreground">Customer Name</p>
+                          <p className="text-lg font-semibold">{selectedDebt.customerName}</p>
                         </div>
                         <div>
-                          <span className="font-medium mr-1">Reminder:</span>
-                          <span>{debt.notified ? 'Sent' : 'Not sent'}</span>
+                          <p className="text-sm font-medium text-muted-foreground">Amount</p>
+                          <p className="text-lg font-semibold">${selectedDebt.amount.toFixed(2)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Created Date</p>
+                          <p className="text-lg font-semibold">{selectedDebt.createdDate}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Due Date</p>
+                          <p className="text-lg font-semibold">{selectedDebt.dueDate}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Status</p>
+                          <p
+                            className={`text-lg font-semibold ${
+                              selectedDebt.paid ? 'text-green-600' : 'text-red-600'
+                            }`}
+                          >
+                            {selectedDebt.paid ? 'Paid' : 'Pending'}
+                          </p>
                         </div>
                       </div>
+                      <Button variant="outline" onClick={closeDetailsDialog}>
+                        Close
+                      </Button>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               )}
             </Card>

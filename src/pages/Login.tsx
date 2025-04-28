@@ -62,7 +62,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             <div className="text-xs text-muted-foreground">
-              {t('common.demoLogin')}: admin@example.com / admin123
+              {t('common.demoLogin')}: amani@eample.com / 
             </div>
           </div>
           <div className="space-y-2">
