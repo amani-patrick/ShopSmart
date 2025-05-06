@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import ResetPassword from "./pages/ResetPassword";
 
 // Layout
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -71,6 +71,7 @@ const App = () => (
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
+              <Route path="/auth/reset-password" element={<ResetPassword />} />
             </Route>
             
             {/* Protected Dashboard Routes */}

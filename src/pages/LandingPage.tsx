@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import {
   PieChart, 
   Clock3,
   Menu,
-  X
+  Globe
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import {
@@ -19,79 +18,142 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useTranslation } from 'react-i18next';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const LandingPage = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation */}
       <header className="bg-brand-600 text-white">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Logo className="w-32" />
+        <div className="container mx-auto px-6 py-5 flex items-center justify-between">
+          <Logo className="w-36" />
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-8">
             <Link to="/about" className="text-white hover:text-gray-200">
-              About Us
+              {t('landing.footer.company.about')}
             </Link>
             <Link to="/contact" className="text-white hover:text-gray-200">
-              Contact Us
+              {t('landing.footer.company.contact')}
             </Link>
-            <div className="flex space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-brand-700">
+                  <Globe className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[150px]">
+                <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer">
+                  English
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => changeLanguage('fr')} className="cursor-pointer">
+                  Français
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => changeLanguage('es')} className="cursor-pointer">
+                  Español
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => changeLanguage('rw')} className="cursor-pointer">
+                  Kinyarwanda
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div className="flex space-x-3">
               <Link to="/login">
-                <Button variant="ghost" className="text-white hover:bg-brand-700">Login</Button>
+                <Button variant="ghost" className="text-white hover:bg-brand-700 px-4">{t('landing.cta.login')}</Button>
               </Link>
               <Link to="/signup">
-                <Button className="bg-white text-brand-600 hover:bg-gray-100">Sign Up</Button>
+                <Button className="bg-white text-brand-600 hover:bg-gray-100 px-4">{t('landing.cta.signUp')}</Button>
               </Link>
             </div>
           </div>
           
           {/* Mobile Navigation */}
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[250px] bg-brand-600 text-white">
-                <div className="flex flex-col space-y-4 pt-8">
-                  <Link to="/about" className="w-full">
-                    <Button variant="ghost" className="w-full text-white hover:bg-brand-700">About Us</Button>
-                  </Link>
-                  <Link to="/contact" className="w-full">
-                    <Button variant="ghost" className="w-full text-white hover:bg-brand-700">Contact Us</Button>
-                  </Link>
-                  <Link to="/login" className="w-full">
-                    <Button variant="ghost" className="w-full text-white hover:bg-brand-700">Login</Button>
-                  </Link>
-                  <Link to="/signup" className="w-full">
-                    <Button className="w-full bg-white text-brand-600 hover:bg-gray-100">Sign Up</Button>
-                  </Link>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden text-white">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[250px] bg-brand-600 text-white">
+              <div className="flex flex-col space-y-4 pt-8">
+                <Link to="/about" className="w-full">
+                  <Button variant="ghost" className="w-full text-white hover:bg-brand-700">{t('landing.footer.company.about')}</Button>
+                </Link>
+                <Link to="/contact" className="w-full">
+                  <Button variant="ghost" className="w-full text-white hover:bg-brand-700">{t('landing.footer.company.contact')}</Button>
+                </Link>
+                <div className="px-4 py-2">
+                  <p className="text-sm font-medium mb-2">Language</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-white hover:bg-brand-700"
+                      onClick={() => changeLanguage('en')}
+                    >
+                      English
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-white hover:bg-brand-700"
+                      onClick={() => changeLanguage('fr')}
+                    >
+                      Français
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-white hover:bg-brand-700"
+                      onClick={() => changeLanguage('es')}
+                    >
+                      Español
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-white hover:bg-brand-700"
+                      onClick={() => changeLanguage('rw')}
+                    >
+                      Kinyarwanda
+                    </Button>
+                  </div>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+                <Link to="/login" className="w-full">
+                  <Button variant="ghost" className="w-full text-white hover:bg-brand-700">{t('landing.cta.login')}</Button>
+                </Link>
+                <Link to="/signup" className="w-full">
+                  <Button className="w-full bg-white text-brand-600 hover:bg-gray-100">{t('landing.cta.signUp')}</Button>
+                </Link>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
       {/* Hero section */}
-      <section className="hero-gradient py-16 md:py-24 text-white">
+      <section className="bg-brand-600 text-white py-16 md:py-24">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                Sales Management Made Simple for Local Retailers
+                {t('landing.hero.title')}
               </h1>
               <p className="text-xl mb-8 opacity-90">
-                Track inventory, record sales, manage debts, and generate reports with an easy-to-use platform designed for your business.
+                {t('landing.hero.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/signup">
                   <Button size="lg" className="bg-white text-brand-600 hover:bg-gray-100 w-full sm:w-auto">
-                    Get Started
+                    {t('landing.hero.getStarted')}
                   </Button>
                 </Link>
                 <Button 
@@ -99,7 +161,7 @@ const LandingPage = () => {
                   variant="outline" 
                   className="border-white text-white bg-brand-700 hover:bg-brand-800 w-full sm:w-auto"
                 >
-                  Learn More
+                  {t('landing.hero.learnMore')}
                 </Button>
               </div>
             </div>
@@ -115,12 +177,12 @@ const LandingPage = () => {
       </section>
 
       {/* Features section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Everything You Need to Manage Your Store</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('landing.features.title')}</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Our platform provides all the tools you need to run your retail business efficiently and increase your profits.
+              {t('landing.features.subtitle')}
             </p>
           </div>
 
@@ -128,54 +190,54 @@ const LandingPage = () => {
             {/* Feature 1 */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <ShoppingBag className="h-10 w-10 text-brand-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Inventory Management</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('landing.features.inventory.title')}</h3>
               <p className="text-gray-600">
-                Keep track of your stock levels, get low inventory alerts, and manage product information.
+                {t('landing.features.inventory.description')}
               </p>
             </div>
 
             {/* Feature 2 */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <CreditCard className="h-10 w-10 text-brand-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Sales Tracking</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('landing.features.sales.title')}</h3>
               <p className="text-gray-600">
-                Record all your sales transactions, including cash and credit sales, with an easy-to-use interface.
+                {t('landing.features.sales.description')}
               </p>
             </div>
 
             {/* Feature 3 */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <Clock3 className="h-10 w-10 text-brand-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Debt Management</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('landing.features.debts.title')}</h3>
               <p className="text-gray-600">
-                Track customer credit, set payment deadlines, and receive reminders when payments are due.
+                {t('landing.features.debts.description')}
               </p>
             </div>
 
             {/* Feature 4 */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <Truck className="h-10 w-10 text-brand-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Supplier Management</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('landing.features.suppliers.title')}</h3>
               <p className="text-gray-600">
-                Maintain a list of your suppliers, track orders, and manage relationships all in one place.
+                {t('landing.features.suppliers.description')}
               </p>
             </div>
 
             {/* Feature 5 */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <BarChart3 className="h-10 w-10 text-brand-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Reports & Analytics</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('landing.features.reports.title')}</h3>
               <p className="text-gray-600">
-                Generate daily, weekly, and monthly reports to track your business performance and make informed decisions.
+                {t('landing.features.reports.description')}
               </p>
             </div>
 
             {/* Feature 6 */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <PieChart className="h-10 w-10 text-brand-500 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Profit Tracking</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('landing.features.profit.title')}</h3>
               <p className="text-gray-600">
-                Monitor your profits and losses with visual reports that help you identify opportunities for growth.
+                {t('landing.features.profit.description')}
               </p>
             </div>
           </div>
@@ -183,12 +245,12 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonial section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Trusted by Local Retailers</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('landing.testimonials.title')}</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Join hundreds of store owners who have transformed their business with our platform.
+              {t('landing.testimonials.subtitle')}
             </p>
           </div>
 
@@ -200,12 +262,12 @@ const LandingPage = () => {
                   SA
                 </div>
                 <div>
-                  <h4 className="font-semibold">Sarah Anderson</h4>
-                  <p className="text-sm text-gray-500">Grocery Store Owner</p>
+                  <h4 className="font-semibold">{t('landing.testimonials.testimonial1.name')}</h4>
+                  <p className="text-sm text-gray-500">{t('landing.testimonials.testimonial1.role')}</p>
                 </div>
               </div>
               <p className="text-gray-600">
-                "ShopSmart has completely transformed how I manage my grocery store. I can now track inventory and sales in real-time, which has reduced waste and increased my profits."
+                {t('landing.testimonials.testimonial1.text')}
               </p>
             </div>
 
@@ -216,12 +278,12 @@ const LandingPage = () => {
                   MJ
                 </div>
                 <div>
-                  <h4 className="font-semibold">Michael Johnson</h4>
-                  <p className="text-sm text-gray-500">Electronics Shop Owner</p>
+                  <h4 className="font-semibold">{t('landing.testimonials.testimonial2.name')}</h4>
+                  <p className="text-sm text-gray-500">{t('landing.testimonials.testimonial2.role')}</p>
                 </div>
               </div>
               <p className="text-gray-600">
-                "The debt tracking feature has been a game changer for my business. I no longer have to worry about forgetting customer credits, and the payment reminders are incredibly helpful."
+                {t('landing.testimonials.testimonial2.text')}
               </p>
             </div>
 
@@ -232,12 +294,12 @@ const LandingPage = () => {
                   LP
                 </div>
                 <div>
-                  <h4 className="font-semibold">Lisa Patel</h4>
-                  <p className="text-sm text-gray-500">Clothing Boutique Owner</p>
+                  <h4 className="font-semibold">{t('landing.testimonials.testimonial3.name')}</h4>
+                  <p className="text-sm text-gray-500">{t('landing.testimonials.testimonial3.role')}</p>
                 </div>
               </div>
               <p className="text-gray-600">
-                "The monthly reports help me understand which products are selling well and which aren't. This data has helped me make smarter purchasing decisions and grow my business."
+                {t('landing.testimonials.testimonial3.text')}
               </p>
             </div>
           </div>
@@ -247,19 +309,19 @@ const LandingPage = () => {
       {/* CTA section */}
       <section className="py-16 bg-brand-600 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Business?</h2>
+          <h2 className="text-3xl font-bold mb-6">{t('landing.cta.title')}</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Join thousands of retailers who use our platform to grow their business and increase profits.
+            {t('landing.cta.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link to="/signup">
               <Button size="lg" className="bg-white text-brand-600 hover:bg-gray-100 w-full sm:w-auto">
-                Sign Up Now
+                {t('landing.cta.signUp')}
               </Button>
             </Link>
             <Link to="/login">
               <Button size="lg" variant="outline" className="border-white text-white bg-brand-700 hover:bg-brand-800 w-full sm:w-auto">
-                Login
+                {t('landing.cta.login')}
               </Button>
             </Link>
           </div>
@@ -273,35 +335,35 @@ const LandingPage = () => {
             <div>
               <Logo className="w-32 mb-4" />
               <p className="text-gray-400">
-                Empowering local retailers with smart inventory and sales management solutions.
+                {t('landing.footer.description')}
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-lg mb-4">Product</h4>
+              <h4 className="font-semibold text-lg mb-4">{t('landing.footer.product.title')}</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Features</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Pricing</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Demo</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">{t('landing.footer.product.features')}</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">{t('landing.footer.product.pricing')}</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">{t('landing.footer.product.demo')}</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-lg mb-4">Company</h4>
+              <h4 className="font-semibold text-lg mb-4">{t('landing.footer.company.title')}</h4>
               <ul className="space-y-2">
-                <li><Link to="/about" className="text-gray-400 hover:text-white">About</Link></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Blog</a></li>
-                <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
+                <li><Link to="/about" className="text-gray-400 hover:text-white">{t('landing.footer.company.about')}</Link></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">{t('landing.footer.company.blog')}</a></li>
+                <li><Link to="/contact" className="text-gray-400 hover:text-white">{t('landing.footer.company.contact')}</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-lg mb-4">Legal</h4>
+              <h4 className="font-semibold text-lg mb-4">{t('landing.footer.legal.title')}</h4>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Terms of Service</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">{t('landing.footer.legal.privacy')}</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">{t('landing.footer.legal.terms')}</a></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>© {new Date().getFullYear()} ShopSmart. All rights reserved.</p>
+            <p>{t('landing.footer.copyright', { year: new Date().getFullYear() })}</p>
           </div>
         </div>
       </footer>

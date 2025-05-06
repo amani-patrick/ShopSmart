@@ -1,4 +1,3 @@
-
 {
   "common": {
     "welcome": "Bienvenido de nuevo",
@@ -6,11 +5,30 @@
     "signup": "Registrarse",
     "email": "Correo electrónico",
     "password": "Contraseña",
-    "forgotPassword": "¿Olvidó su contraseña?",
-    "dontHaveAccount": "¿No tiene una cuenta?",
-    "alreadyHaveAccount": "¿Ya tiene una cuenta?",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "dontHaveAccount": "¿No tienes una cuenta?",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
     "createAccount": "Crear una cuenta",
-    "enterInfo": "Ingrese su información para comenzar",
+    "enterInfo": "Ingresa tu información para comenzar",
+    "enterEmailForReset": "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña",
+    "sendResetLink": "Enviar enlace de restablecimiento",
+    "resetEmailSent": "El enlace para restablecer la contraseña ha sido enviado a tu correo electrónico",
+    "loginSuccess": "Inicio de sesión exitoso",
+    "signingIn": "Iniciando sesión...",
+    "demoLogin": "Credenciales de demostración",
+    "save": "Guardar",
+    "UnexpectedError": "Error inesperado",
+    "invalidEmail": "Por favor, introduce una dirección de correo electrónico válida",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "fieldRequired": "Este campo es obligatorio",
+    "pleaseFixErrors": "Por favor, corrige los errores antes de continuar",
+    "confirmSignup": "Confirmar registro",
+    "confirmSignupMessage": "¿Estás seguro de que quieres crear una cuenta con estos datos?",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "accountCreated": "Cuenta creada exitosamente",
+    "signupFailed": "Error al crear la cuenta",
     "firstName": "Nombre",
     "lastName": "Apellido",
     "shopName": "Nombre de la tienda",
@@ -34,9 +52,17 @@
     "logout": "Cerrar sesión",
     "aboutUs": "Sobre nosotros",
     "contactUs": "Contáctenos",
-    "loginSuccess": "Sesión iniciada exitosamente",
-    "signingIn": "Iniciando sesión...",
-    "demoLogin": "Credenciales de demo"
+    "resetPassword": "Restablecer contraseña",
+    "newPassword": "Nueva contraseña",
+    "confirmNewPassword": "Confirmar nueva contraseña",
+    "enterNewPassword": "Por favor, ingrese su nueva contraseña a continuación",
+    "resetting": "Restableciendo...",
+    "passwordResetSuccess": "La contraseña se ha restablecido correctamente",
+    "passwordResetFailed": "Error al restablecer la contraseña",
+    "invalidResetToken": "Token de restablecimiento inválido o expirado",
+    "invalidResetLink": "Enlace de restablecimiento inválido",
+    "invalidResetLinkDesc": "Este enlace de restablecimiento de contraseña es inválido o ha expirado. Por favor, solicite un nuevo enlace de restablecimiento.",
+    "backToLogin": "Volver al inicio de sesión"
   },
   "dashboard": {
     "title": "Panel",
@@ -124,5 +150,87 @@
     "noPermission": "No tiene permiso para acceder a esta página.",
     "active": "Activo",
     "inactive": "Inactivo"
+  },
+  "landing": {
+    "hero": {
+      "title": "Gestión de Ventas Simplificada para Minoristas Locales",
+      "subtitle": "Realice un seguimiento del inventario, registre ventas, administre deudas y genere informes con una plataforma fácil de usar diseñada para su negocio.",
+      "getStarted": "Comenzar",
+      "learnMore": "Saber Más"
+    },
+    "features": {
+      "title": "Todo lo que Necesitas para Gestionar tu Tienda",
+      "subtitle": "Nuestra plataforma proporciona todas las herramientas que necesitas para administrar tu negocio minorista de manera eficiente y aumentar tus ganancias.",
+      "inventory": {
+        "title": "Gestión de Inventario",
+        "description": "Realice un seguimiento de sus niveles de stock, reciba alertas de inventario bajo y administre la información de productos."
+      },
+      "sales": {
+        "title": "Seguimiento de Ventas",
+        "description": "Registre todas sus transacciones de venta, incluidas las ventas en efectivo y a crédito, con una interfaz fácil de usar."
+      },
+      "debts": {
+        "title": "Gestión de Deudas",
+        "description": "Realice un seguimiento del crédito de los clientes, establezca plazos de pago y reciba recordatorios cuando los pagos estén vencidos."
+      },
+      "suppliers": {
+        "title": "Gestión de Proveedores",
+        "description": "Mantenga una lista de sus proveedores, realice un seguimiento de los pedidos y administre las relaciones en un solo lugar."
+      },
+      "reports": {
+        "title": "Informes y Análisis",
+        "description": "Genere informes diarios, semanales y mensuales para realizar un seguimiento del rendimiento de su negocio y tomar decisiones informadas."
+      },
+      "profit": {
+        "title": "Seguimiento de Ganancias",
+        "description": "Monitoree sus ganancias y pérdidas con informes visuales que le ayudan a identificar oportunidades de crecimiento."
+      }
+    },
+    "testimonials": {
+      "title": "Confiado por Minoristas Locales",
+      "subtitle": "Únase a cientos de propietarios de tiendas que han transformado su negocio con nuestra plataforma.",
+      "testimonial1": {
+        "name": "Sarah Anderson",
+        "role": "Propietaria de Tienda de Comestibles",
+        "text": "ShopSmart ha transformado completamente la forma en que gestiono mi tienda de comestibles. Ahora puedo realizar un seguimiento del inventario y las ventas en tiempo real, lo que ha reducido el desperdicio y aumentado mis ganancias."
+      },
+      "testimonial2": {
+        "name": "Michael Johnson",
+        "role": "Propietario de Tienda de Electrónica",
+        "text": "La función de seguimiento de deudas ha sido un cambio radical para mi negocio. Ya no tengo que preocuparme por olvidar los créditos de los clientes, y los recordatorios de pago son increíblemente útiles."
+      },
+      "testimonial3": {
+        "name": "Lisa Patel",
+        "role": "Propietaria de Boutique de Ropa",
+        "text": "Los informes mensuales me ayudan a entender qué productos se venden bien y cuáles no. Estos datos me han ayudado a tomar decisiones de compra más inteligentes y a hacer crecer mi negocio."
+      }
+    },
+    "cta": {
+      "title": "¿Listo para Transformar tu Negocio?",
+      "subtitle": "Únase a miles de minoristas que utilizan nuestra plataforma para hacer crecer su negocio y aumentar las ganancias.",
+      "signUp": "Regístrate Ahora",
+      "login": "Iniciar Sesión"
+    },
+    "footer": {
+      "description": "Potenciando a los minoristas locales con soluciones inteligentes de gestión de inventario y ventas.",
+      "product": {
+        "title": "Producto",
+        "features": "Características",
+        "pricing": "Precios",
+        "demo": "Demo"
+      },
+      "company": {
+        "title": "Empresa",
+        "about": "Acerca de",
+        "blog": "Blog",
+        "contact": "Contacto"
+      },
+      "legal": {
+        "title": "Legal",
+        "privacy": "Política de Privacidad",
+        "terms": "Términos de Servicio"
+      },
+      "copyright": "© {{year}} ShopSmart. Todos los derechos reservados."
+    }
   }
 }

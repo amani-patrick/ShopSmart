@@ -1,16 +1,34 @@
-
 {
   "common": {
-    "welcome": "Bon retour",
+    "welcome": "Bienvenue",
     "signin": "Se connecter",
     "signup": "S'inscrire",
-    "email": "Email",
+    "email": "E-mail",
     "password": "Mot de passe",
     "forgotPassword": "Mot de passe oublié ?",
     "dontHaveAccount": "Vous n'avez pas de compte ?",
     "alreadyHaveAccount": "Vous avez déjà un compte ?",
     "createAccount": "Créer un compte",
     "enterInfo": "Entrez vos informations pour commencer",
+    "enterEmailForReset": "Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe",
+    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "resetEmailSent": "Le lien de réinitialisation du mot de passe a été envoyé à votre e-mail",
+    "loginSuccess": "Connexion réussie",
+    "signingIn": "Connexion en cours...",
+    "demoLogin": "Identifiants de démonstration",
+    "save": "Enregistrer",
+    "UnexpectedError": "Erreur inattendue",
+    "invalidEmail": "Veuillez entrer une adresse e-mail valide",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "fieldRequired": "Ce champ est obligatoire",
+    "pleaseFixErrors": "Veuillez corriger les erreurs avant de continuer",
+    "confirmSignup": "Confirmer l'inscription",
+    "confirmSignupMessage": "Êtes-vous sûr de vouloir créer un compte avec ces informations ?",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "accountCreated": "Compte créé avec succès",
+    "signupFailed": "Échec de la création du compte",
     "firstName": "Prénom",
     "lastName": "Nom de famille",
     "shopName": "Nom de la boutique",
@@ -34,9 +52,17 @@
     "logout": "Se déconnecter",
     "aboutUs": "À propos de nous",
     "contactUs": "Contactez-nous",
-    "loginSuccess": "Connexion réussie",
-    "signingIn": "Connexion en cours...",
-    "demoLogin": "Identifiants de démonstration"
+    "resetPassword": "Réinitialiser le mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "confirmNewPassword": "Confirmer le nouveau mot de passe",
+    "enterNewPassword": "Veuillez entrer votre nouveau mot de passe ci-dessous",
+    "resetting": "Réinitialisation...",
+    "passwordResetSuccess": "Le mot de passe a été réinitialisé avec succès",
+    "passwordResetFailed": "Échec de la réinitialisation du mot de passe",
+    "invalidResetToken": "Jeton de réinitialisation invalide ou expiré",
+    "invalidResetLink": "Lien de réinitialisation invalide",
+    "invalidResetLinkDesc": "Ce lien de réinitialisation de mot de passe est invalide ou a expiré. Veuillez demander un nouveau lien de réinitialisation.",
+    "backToLogin": "Retour à la connexion"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -124,5 +150,87 @@
     "noPermission": "Vous n'avez pas la permission d'accéder à cette page.",
     "active": "Actif",
     "inactive": "Inactif"
+  },
+  "landing": {
+    "hero": {
+      "title": "Gestion des Ventes Simplifiée pour les Détaillants Locaux",
+      "subtitle": "Suivez vos stocks, enregistrez vos ventes, gérez vos dettes et générez des rapports avec une plateforme facile à utiliser conçue pour votre entreprise.",
+      "getStarted": "Commencer",
+      "learnMore": "En Savoir Plus"
+    },
+    "features": {
+      "title": "Tout ce dont vous avez besoin pour gérer votre magasin",
+      "subtitle": "Notre plateforme fournit tous les outils nécessaires pour gérer efficacement votre entreprise de détail et augmenter vos bénéfices.",
+      "inventory": {
+        "title": "Gestion des Stocks",
+        "description": "Suivez vos niveaux de stock, recevez des alertes de stock bas et gérez les informations sur vos produits."
+      },
+      "sales": {
+        "title": "Suivi des Ventes",
+        "description": "Enregistrez toutes vos transactions, y compris les ventes en espèces et à crédit, avec une interface facile à utiliser."
+      },
+      "debts": {
+        "title": "Gestion des Dettes",
+        "description": "Suivez les crédits clients, définissez des délais de paiement et recevez des rappels lorsque les paiements sont dus."
+      },
+      "suppliers": {
+        "title": "Gestion des Fournisseurs",
+        "description": "Maintenez une liste de vos fournisseurs, suivez les commandes et gérez les relations en un seul endroit."
+      },
+      "reports": {
+        "title": "Rapports et Analyses",
+        "description": "Générez des rapports quotidiens, hebdomadaires et mensuels pour suivre les performances de votre entreprise et prendre des décisions éclairées."
+      },
+      "profit": {
+        "title": "Suivi des Bénéfices",
+        "description": "Surveillez vos profits et pertes avec des rapports visuels qui vous aident à identifier les opportunités de croissance."
+      }
+    },
+    "testimonials": {
+      "title": "Approuvé par les Détaillants Locaux",
+      "subtitle": "Rejoignez des centaines de propriétaires de magasins qui ont transformé leur entreprise avec notre plateforme.",
+      "testimonial1": {
+        "name": "Sarah Anderson",
+        "role": "Propriétaire d'Épicerie",
+        "text": "ShopSmart a complètement transformé la façon dont je gère mon épicerie. Je peux maintenant suivre les stocks et les ventes en temps réel, ce qui a réduit le gaspillage et augmenté mes bénéfices."
+      },
+      "testimonial2": {
+        "name": "Michael Johnson",
+        "role": "Propriétaire de Magasin d'Électronique",
+        "text": "La fonction de suivi des dettes a changé la donne pour mon entreprise. Je n'ai plus à m'inquiéter d'oublier les crédits clients, et les rappels de paiement sont incroyablement utiles."
+      },
+      "testimonial3": {
+        "name": "Lisa Patel",
+        "role": "Propriétaire de Boutique de Vêtements",
+        "text": "Les rapports mensuels m'aident à comprendre quels produits se vendent bien et lesquels ne se vendent pas. Ces données m'ont aidé à prendre des décisions d'achat plus intelligentes et à développer mon entreprise."
+      }
+    },
+    "cta": {
+      "title": "Prêt à Transformer Votre Entreprise ?",
+      "subtitle": "Rejoignez des milliers de détaillants qui utilisent notre plateforme pour développer leur entreprise et augmenter leurs bénéfices.",
+      "signUp": "S'inscrire Maintenant",
+      "login": "Se Connecter"
+    },
+    "footer": {
+      "description": "Donner aux détaillants locaux les moyens de gérer intelligemment leurs stocks et leurs ventes.",
+      "product": {
+        "title": "Produit",
+        "features": "Fonctionnalités",
+        "pricing": "Tarification",
+        "demo": "Démo"
+      },
+      "company": {
+        "title": "Entreprise",
+        "about": "À Propos",
+        "blog": "Blog",
+        "contact": "Contact"
+      },
+      "legal": {
+        "title": "Légal",
+        "privacy": "Politique de Confidentialité",
+        "terms": "Conditions d'Utilisation"
+      },
+      "copyright": "© {{year}} ShopSmart. Tous droits réservés."
+    }
   }
 }

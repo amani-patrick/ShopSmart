@@ -1,16 +1,34 @@
-
 {
   "common": {
     "welcome": "Murakaza neza",
     "signin": "Injira",
     "signup": "Iyandikishe",
-    "email": "Imeri",
-    "password": "Ijambo ryibanga",
-    "forgotPassword": "Wibagiwe ijambo ryibanga?",
+    "email": "Imeyili",
+    "password": "Ijambobanga",
+    "forgotPassword": "Wibagiwe ijambobanga?",
     "dontHaveAccount": "Nta konti ufite?",
-    "alreadyHaveAccount": "Usanzwe ufite konti?",
-    "createAccount": "Kora konti",
-    "enterInfo": "Injiza amakuru yawe kugirango utangire",
+    "alreadyHaveAccount": "Ufite konti?",
+    "createAccount": "Kora konti nshya",
+    "enterInfo": "Andika amakuru yawe kugirango utangire",
+    "enterEmailForReset": "Andika aderesi yawe ya imeyili kandi tuzakumenyesha uko wasubiza ijambobanga ryawe",
+    "sendResetLink": "Ohereza uko wasubiza ijambobanga",
+    "resetEmailSent": "Uko wasubiza ijambobanga ryawe rwaherwe kuri imeyili yawe",
+    "loginSuccess": "Winjiye neza",
+    "signingIn": "Uri kwinjira...",
+    "demoLogin": "Amakuru y'ingero",
+    "save": "Bika",
+    "UnexpectedError": "Ikibazo kitazwi",
+    "invalidEmail": "Nyamuneka andika aderesi yawe ya imeyili nziza",
+    "passwordTooShort": "Ijambo ry'ibanga rigomba kuba rifite inyuguti 8 cyangwa hejuru",
+    "passwordMismatch": "Amajambo y'ibanga atari amwe",
+    "fieldRequired": "Iki gice gikenewe",
+    "pleaseFixErrors": "Nyamuneka vugurura amakosa mbere yo gukomeza",
+    "confirmSignup": "Emeza kwiyandikisha",
+    "confirmSignupMessage": "Urazi neza ko ushaka gukora konti nshya n'aya makuru?",
+    "cancel": "Reka",
+    "confirm": "Emeza",
+    "accountCreated": "Konti yaremwe neza",
+    "signupFailed": "Konti ntiyaremwe",
     "firstName": "Izina",
     "lastName": "Izina ry'umuryango",
     "shopName": "Izina ry'iduka",
@@ -34,9 +52,17 @@
     "logout": "Sohoka",
     "aboutUs": "Turi bande",
     "contactUs": "Twandikire",
-    "loginSuccess": "Winjiye neza",
-    "signingIn": "Urimo kwinjira...",
-    "demoLogin": "Ibyangombwa bya demo"
+    "resetPassword": "Ongera ushyireho ijambo ry'ibanga",
+    "newPassword": "Ijambo ry'ibanga rishya",
+    "confirmNewPassword": "Emeza ijambo ry'ibanga rishya",
+    "enterNewPassword": "Nyamuneka andika ijambo ry'ibanga rishya",
+    "resetting": "Rishyirwa...",
+    "passwordResetSuccess": "Ijambo ry'ibanga rishyirwa neza",
+    "passwordResetFailed": "Kutashobora kongera ushyireho ijambo ry'ibanga",
+    "invalidResetToken": "Token yo kongera ushyireho ijambo ry'ibanga ntiyemewe cyangwa yararenga",
+    "invalidResetLink": "Link yo kongera ushyireho ijambo ry'ibanga ntiyemewe",
+    "invalidResetLinkDesc": "Iyi link yo kongera ushyireho ijambo ry'ibanga ntiyemewe cyangwa yararenga. Nyamuneka saba link nshya yo kongera ushyireho ijambo ry'ibanga.",
+    "backToLogin": "Garuka kuri Login"
   },
   "dashboard": {
     "title": "Ikibaho",
@@ -124,5 +150,87 @@
     "noPermission": "Nta burenganzira ufite bwo kugera kuri iyi paje.",
     "active": "Bikora",
     "inactive": "Ntibikorwa"
+  },
+  "landing": {
+    "hero": {
+      "title": "Gukurikiranwa kw'abacuruzi byoroshye kuri Abacuruzi bo mu Karere",
+      "subtitle": "Kurikiranwa n'ibicuruzwa, andika abacuruzi, gucunga amanzi, kandi ukore raporo hamwe na platform yoroshye yateguwe kugirango ikorane na business yawe.",
+      "getStarted": "Tangira",
+      "learnMore": "Menya Byinshi"
+    },
+    "features": {
+      "title": "Byose Ukeneye Kugirango Ucunge Iduka Ryawe",
+      "subtitle": "Platform yacu iba ibikoresho byose ukeneye kugirango ucunge business yawe neza kandi wongere amafaranga yawe.",
+      "inventory": {
+        "title": "Gucunga Ibicuruzwa",
+        "description": "Kurikiranwa n'ibicuruzwa byawe, kumenya igihe ibicuruzwa byawe biri hasi, kandi gucunga amakuru y'ibicuruzwa."
+      },
+      "sales": {
+        "title": "Kurikiranwa n'Abacuruzi",
+        "description": "Andika byose by'ubucuruzi bwawe, harimo abacuruzi b'inkweto na b'amanzi, hamwe na interface yoroshye."
+      },
+      "debts": {
+        "title": "Gucunga Amanzi",
+        "description": "Kurikiranwa n'amanzi y'abakiriya, shiraho igihe cyo kwishyura, kandi wakirire amakuru igihe amanzi atari yishyuwe."
+      },
+      "suppliers": {
+        "title": "Gucunga Abatanga Ibicuruzwa",
+        "description": "Bika urutonde rw'abatanga ibicuruzwa bawe, kurikiranwa n'ibyo ordera, kandi gucunga ubufatanye mu giti cye."
+      },
+      "reports": {
+        "title": "Raporo na Analytics",
+        "description": "Kora raporo za buri munsi, buri cyumweru, na buri kwezi kugirango urikire imikorere ya business yawe kandi ufate ibyemezo by'ingenzi."
+      },
+      "profit": {
+        "title": "Kurikiranwa n'Amafaranga",
+        "description": "Rikira amafaranga yawe n'akababaro hamwe na raporo z'ibyishimo zifasha kumenya amahirwe yo kwaguka."
+      }
+    },
+    "testimonials": {
+      "title": "Byizewe na Abacuruzi bo mu Karere",
+      "subtitle": "Shyira hamwe na magana y'abacuruzi bafite iduka bafashe guhindura business zabo na platform yacu.",
+      "testimonial1": {
+        "name": "Sarah Anderson",
+        "role": "Umwishingizi wa Duka ry'Amakuru",
+        "text": "ShopSmart yahindutse cyane uko nkoresha iduka ryanjye ry'amakuru. Ubu nshobora kurikiranwa n'ibicuruzwa n'abacuruzi mu gihe cy'ukuri, byakuyeho ibyangiritse kandi byongeyeho amafaranga yanjye."
+      },
+      "testimonial2": {
+        "name": "Michael Johnson",
+        "role": "Umwishingizi wa Duka ry'Electroniki",
+        "text": "Umumaro wo kurikiranwa n'amanzi warihuse cyane business yanjye. Sinzi nongera kwibwira kuri amanzi y'abakiriya, kandi amakuru yo kwishyura ari ngombwa cyane."
+      },
+      "testimonial3": {
+        "name": "Lisa Patel",
+        "role": "Umwishingizi wa Boutique y'Impuzu",
+        "text": "Raporo za buri kwezi zifasha kumenya ibicuruzwa byiza n'ibibi. Izi data zanfashije gufata ibyemezo by'ingenzi byo kugura kandi kongera business yanjye."
+      }
+    },
+    "cta": {
+      "title": "Witeguye Guhindura Business Yawe?",
+      "subtitle": "Shyira hamwe na ibihumbi by'abacuruzi bakoresha platform yacu kugirango bakore business zabo kandi bongere amafaranga.",
+      "signUp": "Iyandikishe Ubu",
+      "login": "Injira"
+    },
+    "footer": {
+      "description": "Gufasha abacuruzi bo mu karere hamwe na solisiyo z'ingenzi zo gucunga ibicuruzwa n'abacuruzi.",
+      "product": {
+        "title": "Ibicuruzwa",
+        "features": "Ibiranga",
+        "pricing": "Amadolari",
+        "demo": "Demo"
+      },
+      "company": {
+        "title": "Kampani",
+        "about": "Kuri Twe",
+        "blog": "Blog",
+        "contact": "Twandikire"
+      },
+      "legal": {
+        "title": "Amategeko",
+        "privacy": "Politiki y'Ibanga",
+        "terms": "Amabwiriza ya Serivisi"
+      },
+      "copyright": "© {{year}} ShopSmart. Byose byafitwe."
+    }
   }
 }

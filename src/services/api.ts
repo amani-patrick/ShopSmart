@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import type { User, AuthResponse, SignupCredentials, UserCredentials } from './auth';
 import { number, string } from 'zod';
 
-const BASE_URL = 'http://localhost:8080/';
+const BASE_URL = 'http://localhost:8080';
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -45,6 +45,25 @@ api.interceptors.response.use(
 // ----------------------------
 // 🔐 Auth API Functions
 // ----------------------------
+
+interface ForgotPasswordResponse {
+  token: string | null;
+  message: string;
+}
+
+interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+export const forgotPassword = async (email: string): Promise<ForgotPasswordResponse> => {
+  const response = await api.post<ForgotPasswordResponse>('api/auth/forgot-password', { email });
+  return response.data;
+};
+
+export const resetPassword = async (data: ResetPasswordRequest): Promise<void> => {
+  await api.post('api/auth/reset-password', data);
+};
 
 export const login = async (credentials: UserCredentials): Promise<AuthResponse> => {
   const response = await api.post<AuthResponse>('auth/login', credentials);

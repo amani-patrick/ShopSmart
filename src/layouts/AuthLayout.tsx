@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -11,14 +10,14 @@ const AuthLayout = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left side - Brand */}
-      <div className="flex-1 hero-gradient p-8 text-white flex-col justify-center hidden md:flex">
+      <div className="flex-1 bg-brand-600 p-8 text-white flex-col justify-center hidden md:flex">
         <div className="max-w-md mx-auto">
           <Logo className="mb-8 w-40" />
           <h1 className="text-4xl font-bold mb-6">
-            Transform your retail business with smart inventory management
+            {t('landing.hero.title')}
           </h1>
           <p className="text-lg opacity-90">
-            Join thousands of retailers who use our platform to track sales, manage inventory, and grow their business.
+            {t('landing.hero.subtitle')}
           </p>
         </div>
       </div>

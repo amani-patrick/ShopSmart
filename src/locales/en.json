@@ -1,4 +1,3 @@
-
 {
   "common": {
     "welcome": "Welcome back",
@@ -11,6 +10,9 @@
     "alreadyHaveAccount": "Already have an account?",
     "createAccount": "Create an account",
     "enterInfo": "Enter your information to get started",
+    "enterEmailForReset": "Enter your email address and we'll send you a link to reset your password",
+    "sendResetLink": "Send Reset Link",
+    "resetEmailSent": "Password reset link has been sent to your email",
     "firstName": "First name",
     "lastName": "Last name",
     "shopName": "Shop Name",
@@ -38,7 +40,29 @@
     "signingIn": "Signing in...",
     "demoLogin": "Demo credentials",
     "save": "Save",
-    "UnexpectedError":"UnexpectedError"
+    "UnexpectedError": "UnexpectedError",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordTooShort": "Password must be at least 8 characters long",
+    "passwordMismatch": "Passwords do not match",
+    "fieldRequired": "This field is required",
+    "pleaseFixErrors": "Please fix the errors before continuing",
+    "confirmSignup": "Confirm Sign Up",
+    "confirmSignupMessage": "Are you sure you want to create an account with these details?",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "accountCreated": "Account created successfully",
+    "signupFailed": "Failed to create account",
+    "resetPassword": "Reset Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "enterNewPassword": "Please enter your new password below",
+    "resetting": "Resetting...",
+    "passwordResetSuccess": "Password has been reset successfully",
+    "passwordResetFailed": "Failed to reset password",
+    "invalidResetToken": "Invalid or expired reset token",
+    "invalidResetLink": "Invalid Reset Link",
+    "invalidResetLinkDesc": "This password reset link is invalid or has expired. Please request a new password reset link.",
+    "backToLogin": "Back to Login"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -71,8 +95,8 @@
     "runningLow": "is running low on stock",
     "hoursAgo": "hours ago",
     "yesterday": "Yesterday",
-    "inventory":"Inventory",
-    "debts":"Debts"
+    "inventory": "Inventory",
+    "debts": "Debts"
   },
   "admin": {
     "title": "Admin Dashboard",
@@ -158,5 +182,87 @@
     "selectOrders": "Select Orders",
     "applyActions": "Apply Actions",
     "actionsApplied": "Actions applied successfully"
+  },
+  "landing": {
+    "hero": {
+      "title": "Sales Management Made Simple for Local Retailers",
+      "subtitle": "Track inventory, record sales, manage debts, and generate reports with an easy-to-use platform designed for your business.",
+      "getStarted": "Get Started",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Everything You Need to Manage Your Store",
+      "subtitle": "Our platform provides all the tools you need to run your retail business efficiently and increase your profits.",
+      "inventory": {
+        "title": "Inventory Management",
+        "description": "Keep track of your stock levels, get low inventory alerts, and manage product information."
+      },
+      "sales": {
+        "title": "Sales Tracking",
+        "description": "Record all your sales transactions, including cash and credit sales, with an easy-to-use interface."
+      },
+      "debts": {
+        "title": "Debt Management",
+        "description": "Track customer credit, set payment deadlines, and receive reminders when payments are due."
+      },
+      "suppliers": {
+        "title": "Supplier Management",
+        "description": "Maintain a list of your suppliers, track orders, and manage relationships all in one place."
+      },
+      "reports": {
+        "title": "Reports & Analytics",
+        "description": "Generate daily, weekly, and monthly reports to track your business performance and make informed decisions."
+      },
+      "profit": {
+        "title": "Profit Tracking",
+        "description": "Monitor your profits and losses with visual reports that help you identify opportunities for growth."
+      }
+    },
+    "testimonials": {
+      "title": "Trusted by Local Retailers",
+      "subtitle": "Join hundreds of store owners who have transformed their business with our platform.",
+      "testimonial1": {
+        "name": "Sarah Anderson",
+        "role": "Grocery Store Owner",
+        "text": "ShopSmart has completely transformed how I manage my grocery store. I can now track inventory and sales in real-time, which has reduced waste and increased my profits."
+      },
+      "testimonial2": {
+        "name": "Michael Johnson",
+        "role": "Electronics Shop Owner",
+        "text": "The debt tracking feature has been a game changer for my business. I no longer have to worry about forgetting customer credits, and the payment reminders are incredibly helpful."
+      },
+      "testimonial3": {
+        "name": "Lisa Patel",
+        "role": "Clothing Boutique Owner",
+        "text": "The monthly reports help me understand which products are selling well and which aren't. This data has helped me make smarter purchasing decisions and grow my business."
+      }
+    },
+    "cta": {
+      "title": "Ready to Transform Your Business?",
+      "subtitle": "Join thousands of retailers who use our platform to grow their business and increase profits.",
+      "signUp": "Sign Up Now",
+      "login": "Login"
+    },
+    "footer": {
+      "description": "Empowering local retailers with smart inventory and sales management solutions.",
+      "product": {
+        "title": "Product",
+        "features": "Features",
+        "pricing": "Pricing",
+        "demo": "Demo"
+      },
+      "company": {
+        "title": "Company",
+        "about": "About",
+        "blog": "Blog",
+        "contact": "Contact"
+      },
+      "legal": {
+        "title": "Legal",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service"
+      },
+      "copyright": "© {{year}} ShopSmart. All rights reserved."
+    }
   }
 }
