@@ -47,7 +47,7 @@ api.interceptors.response.use(
 // ----------------------------
 
 export const login = async (credentials: UserCredentials): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/login', credentials);
+  const response = await api.post<AuthResponse>('auth/login', credentials);
   const { token, user } = response.data;
 
   localStorage.setItem('auth_token', token);
@@ -59,7 +59,7 @@ export const login = async (credentials: UserCredentials): Promise<AuthResponse>
 };
 
 export const signup = async (userData: SignupCredentials): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/signup', userData);
+  const response = await api.post<AuthResponse>('/auth/signup', userData); // Updated endpoint to /auth/signup
   const { token, user } = response.data;
 
   localStorage.setItem('auth_token', token);
@@ -308,7 +308,7 @@ export const addInventoryItem = async (inventoryData: {
   sellingPrice: number;
   supplier: string;
   stockAlertLevel: number;
-  image?: string; // Optional image field
+  image?: File; // Accept a File object for the image
 }): Promise<any> => {
   const formData = new FormData();
 

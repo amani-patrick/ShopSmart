@@ -21,6 +21,8 @@ const Sales = () => {
     dueDate: '',
   });
 
+  const BASE_URL = 'http://localhost:8080'; // Backend base URL
+
   // Fetch sales with product details on component mount
   useEffect(() => {
     const fetchSales = async () => {
@@ -316,7 +318,7 @@ const Sales = () => {
                       <div className="flex items-center gap-3">
                         {sale.product.imageUrl ? (
                           <img
-                            src={sale.product.imageUrl}
+                            src={`${BASE_URL}${sale.product.imageUrl}`} // Prepend BASE_URL to imageUrl
                             alt={sale.product.name}
                             className="w-10 h-10 rounded-md object-cover"
                           />

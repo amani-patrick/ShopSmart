@@ -42,22 +42,23 @@ const SignUp = () => {
     }
 
     try {
+      // Format the data as required
       const userData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         shopName: formData.shopName,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
         address: {
           street: formData.street,
           city: formData.city,
           postalCode: formData.postalCode,
           country: formData.country,
         },
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
       };
 
-      await signup(userData);
+      await signup(userData); 
       toast.success(t('common.accountCreated'));
       navigate('/dashboard');
     } catch (error) {

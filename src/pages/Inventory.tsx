@@ -112,8 +112,14 @@ const Inventory = () => {
     }
   
     try {
+      // Get the file from the file input
+      const imageFile = fileInputRef.current?.files?.[0] || undefined;
+  
       // Call the API to add the product
-      const addedProduct = await addInventoryItem(newProduct);
+      const addedProduct = await addInventoryItem({
+        ...newProduct,
+        image: imageFile, // Pass the File object
+      });
   
       // Update the products state with the new product
       setProducts([...products, addedProduct]);
@@ -371,12 +377,7 @@ const Inventory = () => {
                       if (file) {
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          const result = reader.result as string;
-                          setImagePreview(result);
-                          reader.onloadend = () => {
-                            setNewProduct({ ...newProduct, image: reader.result as string });
-                          };
-                          reader.readAsDataURL(file);
+                          setImagePreview(reader.result as string); // Update the preview
                         };
                         reader.readAsDataURL(file);
                       }
