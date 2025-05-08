@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,161 +35,156 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Edit, Trash, Phone, Mail, MapPin, User } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Sample supplier data
-const initialSuppliers = [
-  {
-    id: 1,
-    name: 'Global Foods Inc.',
-    category: 'Food',
-    contact: 'John Smith',
-    phone: '+1 (555) 123-4567',
-    email: 'john@globalfoods.com',
-    street: '123 Main Street',
-    city: 'Cityville',
-    state: 'State',
-    postalCode: '12345',
-    country: 'USA',
-    status: 'active',
-  },
-  {
-    id: 2,
-    name: 'Tech Solutions Ltd.',
-    category: 'Electronics',
-    contact: 'Sarah Johnson',
-    phone: '+1 (555) 987-6543',
-    email: 'sarah@techsolutions.com',
-    street: '456 Tech Avenue',
-    city: 'Innovation City',
-    state: 'State',
-    postalCode: '67890',
-    country: 'Canada',
-    status: 'active',
-  },
-  {
-    id: 3,
-    name: 'Fashion World',
-    category: 'Clothing',
-    contact: 'Michael Brown',
-    phone: '+1 (555) 456-7890',
-    email: 'michael@fashionworld.com',
-    street: '789 Style Street',
-    city: 'Trendville',
-    state: 'State',
-    postalCode: '34567',
-    country: 'UK',
-    status: 'inactive',
-  },
-];
+import { getAllSuppliers, addSupplier, updateSupplier, deleteSupplier, type Supplier, type CreateSupplierData } from '@/services/api';
 
 const Suppliers = () => {
-  const [suppliers, setSuppliers] = useState(initialSuppliers);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [newSupplier, setNewSupplier] = useState({
+  const [isLoading, setIsLoading] = useState(true);
+  const [newSupplier, setNewSupplier] = useState<CreateSupplierData>({
     name: '',
     category: '',
-    contact: '',
-    phone: '',
+    contactPerson: '',
+    phoneNumber: '',
     email: '',
-    street: '',
+    address: '',
     city: '',
     state: '',
     postalCode: '',
     country: '',
-    status: 'active',
+    active: true,
   });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingSupplierId, setEditingSupplierId] = useState<number | null>(null);
+  
+  // Fetch suppliers on component mount
+  useEffect(() => {
+    fetchSuppliers();
+  }, []);
+
+  const fetchSuppliers = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getAllSuppliers();
+      setSuppliers(data);
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+      toast.error('Failed to fetch suppliers');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   // Filter suppliers based on search term
   const filteredSuppliers = suppliers.filter(supplier => 
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     supplier.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.contact.toLowerCase().includes(searchTerm.toLowerCase())
+    supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
   // Format full address
-  const formatAddress = (supplier: typeof initialSuppliers[0]) => {
-    return `${supplier.street}, ${supplier.city}, ${supplier.state}, ${supplier.postalCode}, ${supplier.country}`;
+  const formatAddress = (supplier: Supplier) => {
+    return `${supplier.address}, ${supplier.city}, ${supplier.state}, ${supplier.postalCode}, ${supplier.country}`;
   };
   
   // Handle adding a new supplier
-  const handleAddSupplier = () => {
-    if (!newSupplier.name || !newSupplier.contact || !newSupplier.phone) {
+  const handleAddSupplier = async () => {
+    if (!newSupplier.name || !newSupplier.contactPerson || !newSupplier.phoneNumber) {
       toast.error("Please fill in all required fields");
       return;
     }
     
-    const newId = suppliers.length > 0 ? Math.max(...suppliers.map(s => s.id)) + 1 : 1;
-    
-    setSuppliers([...suppliers, { ...newSupplier, id: newId }]);
-    setNewSupplier({
-      name: '',
-      category: '',
-      contact: '',
-      phone: '',
-      email: '',
-      street: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: '',
-      status: 'active',
-    });
-    
-    setIsAddDialogOpen(false);
-    toast.success("Supplier added successfully");
+    try {
+      const addedSupplier = await addSupplier(newSupplier);
+      setSuppliers([...suppliers, addedSupplier]);
+      setNewSupplier({
+        name: '',
+        category: '',
+        contactPerson: '',
+        phoneNumber: '',
+        email: '',
+        address: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: '',
+        active: true,
+      });
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding supplier:', error);
+      toast.error('Failed to add supplier');
+    }
   };
   
   // Handle editing a supplier
-  const handleEditSupplier = () => {
+  const handleEditSupplier = async () => {
     if (!editingSupplierId) return;
     
-    setSuppliers(suppliers.map(supplier => 
-      supplier.id === editingSupplierId ? { ...newSupplier, id: editingSupplierId } : supplier
-    ));
-    
-    setEditingSupplierId(null);
-    setNewSupplier({
-      name: '',
-      category: '',
-      contact: '',
-      phone: '',
-      email: '',
-      street: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: '',
-      status: 'active',
-    });
-    
-    toast.success("Supplier updated successfully");
+    try {
+      const updatedSupplier = await updateSupplier(editingSupplierId, newSupplier);
+      setSuppliers(suppliers.map(supplier => 
+        supplier.id === editingSupplierId ? updatedSupplier : supplier
+      ));
+      setEditingSupplierId(null);
+      setNewSupplier({
+        name: '',
+        category: '',
+        contactPerson: '',
+        phoneNumber: '',
+        email: '',
+        address: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: '',
+        active: true,
+      });
+    } catch (error) {
+      console.error('Error updating supplier:', error);
+      toast.error('Failed to update supplier');
+    }
   };
   
   // Start editing a supplier
-  const startEditing = (supplier: typeof initialSuppliers[0]) => {
+  const startEditing = (supplier: Supplier) => {
     setEditingSupplierId(supplier.id);
     setNewSupplier({
       name: supplier.name,
       category: supplier.category,
-      contact: supplier.contact,
-      phone: supplier.phone,
+      contactPerson: supplier.contactPerson,
+      phoneNumber: supplier.phoneNumber,
       email: supplier.email,
-      street: supplier.street,
+      address: supplier.address,
       city: supplier.city,
       state: supplier.state,
       postalCode: supplier.postalCode,
       country: supplier.country,
-      status: supplier.status,
+      active: supplier.active,
     });
   };
   
   // Handle deleting a supplier
-  const handleDeleteSupplier = (id: number) => {
-    setSuppliers(suppliers.filter(supplier => supplier.id !== id));
-    toast.success("Supplier removed successfully");
+  const handleDeleteSupplier = async (id: number) => {
+    try {
+      await deleteSupplier(id);
+      setSuppliers(suppliers.filter(supplier => supplier.id !== id));
+    } catch (error) {
+      console.error('Error deleting supplier:', error);
+      toast.error('Failed to delete supplier');
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2">Loading suppliers...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -239,8 +233,8 @@ const Suppliers = () => {
                 <Label htmlFor="contact">Contact Person*</Label>
                 <Input 
                   id="contact" 
-                  value={newSupplier.contact} 
-                  onChange={(e) => setNewSupplier({...newSupplier, contact: e.target.value})}
+                  value={newSupplier.contactPerson} 
+                  onChange={(e) => setNewSupplier({...newSupplier, contactPerson: e.target.value})}
                   placeholder="Enter contact person's name"
                 />
               </div>
@@ -248,8 +242,8 @@ const Suppliers = () => {
                 <Label htmlFor="phone">Phone Number*</Label>
                 <Input 
                   id="phone" 
-                  value={newSupplier.phone} 
-                  onChange={(e) => setNewSupplier({...newSupplier, phone: e.target.value})}
+                  value={newSupplier.phoneNumber} 
+                  onChange={(e) => setNewSupplier({...newSupplier, phoneNumber: e.target.value})}
                   placeholder="Enter phone number"
                 />
               </div>
@@ -269,10 +263,10 @@ const Suppliers = () => {
                 <Label>Address</Label>
                 <div className="grid gap-3">
                   <Input 
-                    id="street" 
+                    id="address" 
                     placeholder="Street Address"
-                    value={newSupplier.street} 
-                    onChange={(e) => setNewSupplier({...newSupplier, street: e.target.value})}
+                    value={newSupplier.address} 
+                    onChange={(e) => setNewSupplier({...newSupplier, address: e.target.value})}
                   />
                   <div className="grid grid-cols-2 gap-3">
                     <Input 
@@ -346,16 +340,16 @@ const Suppliers = () => {
                 <Label htmlFor="edit-contact">Contact Person*</Label>
                 <Input 
                   id="edit-contact" 
-                  value={newSupplier.contact} 
-                  onChange={(e) => setNewSupplier({...newSupplier, contact: e.target.value})}
+                  value={newSupplier.contactPerson} 
+                  onChange={(e) => setNewSupplier({...newSupplier, contactPerson: e.target.value})}
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-phone">Phone Number*</Label>
                 <Input 
                   id="edit-phone" 
-                  value={newSupplier.phone} 
-                  onChange={(e) => setNewSupplier({...newSupplier, phone: e.target.value})}
+                  value={newSupplier.phoneNumber} 
+                  onChange={(e) => setNewSupplier({...newSupplier, phoneNumber: e.target.value})}
                 />
               </div>
               <div className="grid gap-2">
@@ -373,10 +367,10 @@ const Suppliers = () => {
                 <Label>Address</Label>
                 <div className="grid gap-3">
                   <Input 
-                    id="edit-street" 
+                    id="edit-address" 
                     placeholder="Street Address"
-                    value={newSupplier.street} 
-                    onChange={(e) => setNewSupplier({...newSupplier, street: e.target.value})}
+                    value={newSupplier.address} 
+                    onChange={(e) => setNewSupplier({...newSupplier, address: e.target.value})}
                   />
                   <div className="grid grid-cols-2 gap-3">
                     <Input 
@@ -414,8 +408,8 @@ const Suppliers = () => {
                 <select
                   id="edit-status"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                  value={newSupplier.status}
-                  onChange={(e) => setNewSupplier({...newSupplier, status: e.target.value})}
+                  value={newSupplier.active ? 'active' : 'inactive'}
+                  onChange={(e) => setNewSupplier({...newSupplier, active: e.target.value === 'active'})}
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -489,10 +483,10 @@ const Suppliers = () => {
                     <CardDescription className="flex items-center mt-1">
                       {supplier.category}
                       <Badge 
-                        variant={supplier.status === 'active' ? 'default' : 'secondary'}
+                        variant={supplier.active ? 'default' : 'secondary'}
                         className="ml-2"
                       >
-                        {supplier.status === 'active' ? 'Active' : 'Inactive'}
+                        {supplier.active ? 'Active' : 'Inactive'}
                       </Badge>
                     </CardDescription>
                   </div>
@@ -540,7 +534,7 @@ const Suppliers = () => {
                       <User className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{supplier.contact}</p>
+                      <p className="text-sm font-medium">{supplier.contactPerson}</p>
                       <p className="text-xs text-muted-foreground">Contact Person</p>
                     </div>
                   </div>
@@ -549,7 +543,7 @@ const Suppliers = () => {
                       <Phone className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{supplier.phone}</p>
+                      <p className="text-sm font-medium">{supplier.phoneNumber}</p>
                       <p className="text-xs text-muted-foreground">Phone</p>
                     </div>
                   </div>

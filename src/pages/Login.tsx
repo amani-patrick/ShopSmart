@@ -37,7 +37,9 @@ const Login = () => {
         navigate('/dashboard');
       }
     } catch (error: unknown) {
-      if (error instanceof AxiosError) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else if (error instanceof AxiosError) {
         toast.error(error.response?.data?.message || t('common.loginFailed'));
       } else {
         toast.error(t('common.unexpectedError'));

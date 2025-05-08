@@ -62,7 +62,6 @@ const Sales = () => {
 
     const existingItem = cart.find((item) => item.productId === productId);
     if (existingItem) {
-      
       setCart(
         cart.map((item) =>
           item.productId === productId
@@ -84,6 +83,20 @@ const Sales = () => {
         },
       ]);
     }
+  };
+
+  // Add new function to increment quantity
+  const incrementQuantity = (productId: number) => {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+
+    setCart(
+      cart.map((item) =>
+        item.productId === productId
+          ? { ...item, quantity: item.quantity + 1, totalAmount: (item.quantity + 1) * product.sellingPrice }
+          : item
+      )
+    );
   };
 
   // Remove product from cart
@@ -220,7 +233,19 @@ const Sales = () => {
                       {cart.map((item) => (
                         <TableRow key={item.productId}>
                           <TableCell>{item.productName}</TableCell>
-                          <TableCell>{item.quantity}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {item.quantity}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => incrementQuantity(item.productId)}
+                                className="h-6 w-6 p-0"
+                              >
+                                +
+                              </Button>
+                            </div>
+                          </TableCell>
                           <TableCell>{item.unit}</TableCell>
                           <TableCell>${item.totalAmount.toFixed(2)}</TableCell>
                           <TableCell>

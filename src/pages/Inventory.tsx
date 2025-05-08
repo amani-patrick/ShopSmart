@@ -42,10 +42,11 @@ import {
 } from '@/components/ui/card';
 import { Search, Plus, Edit, Trash, Package, Upload, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { getInventories, addInventoryItem, updateInventoryItem,getInventoryById,deleteInventoryItem } from '@/services/api';
+import { getInventories, addInventoryItem, updateInventoryItem,getInventoryById,deleteInventoryItem,getAllSuppliers,type Supplier } from '@/services/api';
 
 const Inventory = () => {
   const [products, setProducts] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showLowStock, setShowLowStock] = useState(false);
@@ -69,19 +70,23 @@ const Inventory = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
 
-  // Fetch inventory data from the API
+  // Fetch both products and suppliers on component mount
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getInventories();
-        setProducts(data);
+        const [productsData, suppliersData] = await Promise.all([
+          getInventories(),
+          getAllSuppliers()
+        ]);
+        setProducts(productsData);
+        setSuppliers(suppliersData);
       } catch (error) {
-        console.error('Error fetching inventory:', error);
-        toast.error('Failed to fetch inventory. Please try again later.');
+        console.error('Error fetching data:', error);
+        toast.error('Failed to fetch data. Please try again later.');
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, []);
 
   // Filter products based on search term, category, and stock level
@@ -315,12 +320,19 @@ const Inventory = () => {
               {/* Supplier */}
               <div className="grid gap-2">
                 <Label htmlFor="product-supplier">Supplier*</Label>
-                <Input
+                <select
                   id="product-supplier"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                   value={newProduct.supplier}
                   onChange={(e) => setNewProduct({ ...newProduct, supplier: e.target.value })}
-                  placeholder="Enter supplier name"
-                />
+                >
+                  <option value="">Select a supplier</option>
+                  {suppliers.map((supplier) => (
+                    <option key={supplier.id} value={supplier.name}>
+                      {supplier.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Stock Alert Level */}
@@ -446,11 +458,19 @@ const Inventory = () => {
                 onChange={(e) => setNewProduct({ ...newProduct, sellingPrice: parseFloat(e.target.value) })}
               />
               <Label htmlFor="product-supplier">Supplier</Label>
-              <Input
-                id="product-supplier"
+              <select
+                id="edit-product-supplier"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 value={newProduct.supplier}
                 onChange={(e) => setNewProduct({ ...newProduct, supplier: e.target.value })}
-              />
+              >
+                <option value="">Select a supplier</option>
+                {suppliers.map((supplier) => (
+                  <option key={supplier.id} value={supplier.name}>
+                    {supplier.name}
+                  </option>
+                ))}
+              </select>
               <Label htmlFor="product-stock-alert-level">Stock Alert Level</Label>
               <Input
                 id="product-stock-alert-level"
@@ -560,7 +580,7 @@ const Inventory = () => {
                           {product.imageUrl && (
                             <div className="rounded-md overflow-hidden w-10 h-10 flex-shrink-0">
                               <img 
-                                src={product.imageUrl} 
+                                src={`http://localhost:8080${product.imageUrl}`} 
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                               />

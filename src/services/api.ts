@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import type { User, AuthResponse, SignupCredentials, UserCredentials } from './auth';
 import { number, string } from 'zod';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = 'http://localhost:8080/api';
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -66,19 +66,25 @@ export const resetPassword = async (data: ResetPasswordRequest): Promise<void> =
 };
 
 export const login = async (credentials: UserCredentials): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('auth/login', credentials);
-  const { token, user } = response.data;
+  try {
+    const response = await api.post<AuthResponse>('/auth/login', credentials);
+    const { token, user, message } = response.data;
 
-  localStorage.setItem('auth_token', token);
-  localStorage.setItem('user', JSON.stringify(user));
-  const { message } = response.data;
-  toast.success(message);
-  window.location.href = '/dashboard';
-  return { token, user, message };
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    toast.success(message);
+    window.location.href = '/dashboard';
+    return { token, user, message };
+  } catch (error: any) {
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    throw error;
+  }
 };
 
 export const signup = async (userData: SignupCredentials): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/auth/signup', userData); // Updated endpoint to /auth/signup
+  const response = await api.post<AuthResponse>('/auth/signup', userData); 
   const { token, user } = response.data;
 
   localStorage.setItem('auth_token', token);
@@ -100,7 +106,7 @@ export const getSales = async (): Promise<
     saleDate: string;
   }[]
 > => {
-  const response = await api.get('/sales');
+  const response = await api.get('../sales');
   return response.data;
 };
 
@@ -110,14 +116,14 @@ export const addSale = async (saleData: {
   quantitySold: number;
   totalAmount: number;
 }): Promise<any> => {
-  const response = await api.post('/sales', saleData);
+  const response = await api.post('../sales', saleData);
   toast.success('Sale added successfully!');
   return response.data;
 };
 
 // Delete a sale by ID
 export const deleteSale = async (saleId: number): Promise<any> => {
-  const response = await api.delete(`/sales/${saleId}`);
+  const response = await api.delete(`../sales/${saleId}`);
   toast.success('Sale deleted successfully!');
   return response.data;
 };
@@ -166,7 +172,7 @@ export const getSalesSummary = async (): Promise<{
   totalSalesThisMonth: number;
   totalItemsSoldToday: number;
 }> => {
-  const response = await api.get('/sales/summary');
+  const response = await api.get('../sales/summary');
   return response.data;
 };
 
@@ -174,49 +180,8 @@ export const getSalesSummary = async (): Promise<{
 // Supplier API functions                   |
 //-----------------------------------------
 
-// Add a new supplier
-export const addSupplier = async (supplierData: {
-  name: string;
-  category: string;
-  contactPerson: string;
-  phoneNumber: string;
-  email: string;
-  address: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  isActive: boolean;
-}): Promise<any> => {
-  const response = await api.post('/suppliers/add', supplierData);
-  toast.success('Supplier added successfully!');
-  return response.data;
-};
-
-// Update an existing supplier by ID
-export const updateSupplier = async (
-  id: number,
-  supplierData: {
-    name: string;
-    category: string;
-    contactPerson: string;
-    phoneNumber: string;
-    email: string;
-    address: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-    isActive: boolean;
-  }
-): Promise<any> => {
-  const response = await api.put(`/suppliers/${id}`, supplierData);
-  toast.success('Supplier updated successfully!');
-  return response.data;
-};
-
-// Fetch a single supplier by ID
-export const getSupplierById = async (id: number): Promise<{
+// Supplier interfaces
+export interface Supplier {
   id: number;
   name: string;
   category: string;
@@ -229,30 +194,55 @@ export const getSupplierById = async (id: number): Promise<{
   postalCode: string;
   country: string;
   active: boolean;
-}> => {
-  const response = await api.get(`/suppliers/${id}`);
+}
+
+export interface CreateSupplierData {
+  name: string;
+  category: string;
+  contactPerson: string;
+  phoneNumber: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  active: boolean;
+}
+
+// Add a new supplier
+export const addSupplier = async (supplierData: CreateSupplierData): Promise<Supplier> => {
+  const response = await api.post<Supplier>('../suppliers', supplierData);
+  toast.success('Supplier added successfully!');
+  return response.data;
+};
+
+// Update an existing supplier by ID
+export const updateSupplier = async (
+  id: number,
+  supplierData: CreateSupplierData
+): Promise<Supplier> => {
+  const response = await api.put<Supplier>(`../suppliers/${id}`, supplierData);
+  toast.success('Supplier updated successfully!');
   return response.data;
 };
 
 // Fetch all suppliers
-export const getAllSuppliers = async (): Promise<
-  {
-    id: number;
-    name: string;
-    category: string;
-    contactPerson: string;
-    phoneNumber: string;
-    email: string;
-    address: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-    active: boolean;
-  }[]
-> => {
-  const response = await api.get('/suppliers/all');
+export const getAllSuppliers = async (): Promise<Supplier[]> => {
+  const response = await api.get<Supplier[]>('../suppliers');
   return response.data;
+};
+
+// Fetch a single supplier by ID
+export const getSupplierById = async (id: number): Promise<Supplier> => {
+  const response = await api.get<Supplier>(`/suppliers/${id}`);
+  return response.data;
+};
+
+// Delete a supplier
+export const deleteSupplier = async (id: number): Promise<void> => {
+  await api.delete(`/suppliers/${id}`);
+  toast.success('Supplier deleted successfully!');
 };
 
 //-----------------------------------------
@@ -270,7 +260,7 @@ export const getDebts = async (): Promise<
     paid: boolean;
   }[]
 > => {
-  const response = await api.get('/debts');
+  const response = await api.get('../debts');
   return response.data;
 };
 
@@ -283,7 +273,7 @@ export const getDebtById = async (id: number): Promise<{
   dueDate: string;
   paid: boolean;
 }> => {
-  const response = await api.get(`/debts/${id}`);
+  const response = await api.get(`../debts/${id}`);
   return response.data;
 };
 
@@ -295,7 +285,7 @@ export const addDebt = async (debtData: {
   dueDate: string;
   isPaid: boolean;
 }): Promise<any> => {
-  const response = await api.post('/debts', debtData);
+  const response = await api.post('../debts', debtData);
   toast.success('Debt added successfully!');
   return response.data;
 };
@@ -308,7 +298,7 @@ export const updateDebt = async (id: number, debtData: {
   dueDate: string;
   isPaid: boolean;
 }): Promise<any> => {
-  const response = await api.put(`/debts/${id}`, debtData);
+  const response = await api.put(`../debts/${id}`, debtData);
   toast.success('Debt updated successfully!');
   return response.data;
 };
@@ -327,11 +317,10 @@ export const addInventoryItem = async (inventoryData: {
   sellingPrice: number;
   supplier: string;
   stockAlertLevel: number;
-  image?: File; // Accept a File object for the image
+  image?: File;
 }): Promise<any> => {
   const formData = new FormData();
 
-  // Append all fields to the FormData object
   formData.append('name', inventoryData.name);
   formData.append('category', inventoryData.category);
   formData.append('quantity', inventoryData.quantity.toString());
@@ -341,13 +330,11 @@ export const addInventoryItem = async (inventoryData: {
   formData.append('supplier', inventoryData.supplier);
   formData.append('stockAlertLevel', inventoryData.stockAlertLevel.toString());
 
-  // Append the image if it exists
   if (inventoryData.image) {
     formData.append('image', inventoryData.image);
   }
 
-  // Make the API request with form-data
-  const response = await api.post('/inventory/add', formData, {
+  const response = await api.post('../inventory/add', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -356,10 +343,11 @@ export const addInventoryItem = async (inventoryData: {
   toast.success('Inventory item added successfully!');
   return response.data;
 };
-export const getInventories=async ():Promise<
+
+export const getInventories = async (): Promise<
 {
-  id:number;
-  imageUrl:string;
+  id: number;
+  imageUrl: string;
   name: string;
   category: string;
   stockQuantity: number;
@@ -368,12 +356,12 @@ export const getInventories=async ():Promise<
   sellingPrice: number;
   supplier: string;
   stockAlertLevel: number;
-  price:number; 
+  price: number; 
 }[]
->=>{
-  const response=await api.get('/inventory/all')
+> => {
+  const response = await api.get('../inventory/all');
   return response.data;
-}
+};
 
 // Update an existing inventory item by ID
 export const updateInventoryItem = async (
@@ -389,7 +377,7 @@ export const updateInventoryItem = async (
     stockAlertLevel: number;
   }
 ): Promise<any> => {
-  const response = await api.put(`/inventory/${id}`, inventoryData);
+  const response = await api.put(`../inventory/${id}`, inventoryData);
   toast.success('Inventory item updated successfully!');
   return response.data;
 };
@@ -409,11 +397,11 @@ export const getInventoryByCategory = async (category: string): Promise<
     imageUrl?: string;
   }[]
 > => {
-  const response = await api.get(`/inventory/category/${category}`);
+  const response = await api.get(`../inventory/category/${category}`);
   return response.data;
 };
 
-//Fetch invetory items by id
+//Fetch inventory items by id
 export const getInventoryById = async (id: number): Promise<{
   id: number;
   name: string;
@@ -426,7 +414,7 @@ export const getInventoryById = async (id: number): Promise<{
   stockAlertLevel: number;
   imageUrl?: string;
 }> => {
-  const response = await api.get(`/inventory/${id}`);
+  const response = await api.get(`../inventory/${id}`);
   return response.data;
 };
 
@@ -442,9 +430,10 @@ export const getProductByid = async (id: number): Promise<{
   stockAlertLevel: number;
   imageUrl?: string;
 }> => {
-  const response = await api.get(`/inventory/${id}`);
+  const response = await api.get(`../inventory/${id}`);
   return response.data;
-}
+};
+
 // Fetch inventory items by supplier
 export const getInventoryBySupplier = async (supplier: string): Promise<
   {
@@ -460,7 +449,7 @@ export const getInventoryBySupplier = async (supplier: string): Promise<
     imageUrl?: string;
   }[]
 > => {
-  const response = await api.get(`/inventory/supplier/${supplier}`);
+  const response = await api.get(`../inventory/supplier/${supplier}`);
   return response.data;
 };
 
@@ -482,14 +471,15 @@ export const searchInventory = async (query: {
     imageUrl?: string;
   }[]
 > => {
-  const response = await api.get('/inventory/search', { params: query });
+  const response = await api.get('../inventory/search', { params: query });
   return response.data;
 };
+
 export const deleteInventoryItem = async (id: number): Promise<any> => {
-  const response = await api.delete(`/inventory/${id}`);
+  const response = await api.delete(`../inventory/${id}`);
   toast.success('Inventory item deleted successfully!');
   return response.data;
-}
+};
 
 //-----------------------------------------
 // Reports API functions                    |
@@ -501,7 +491,71 @@ export const generateReport = async (reportData: {
   startDate: string;
   endDate: string;
 }): Promise<any> => {
-  const response = await api.get('/reports/generate', { params: reportData });
+  const response = await api.get('../reports/generate', { params: reportData });
   toast.success('Report generated successfully!');
   return response.data;
+};
+
+//-----------------------------------------
+// Profile API functions                    |
+//-----------------------------------------
+
+export interface UpdateProfileData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  address: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  shopName: string;
+  address: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+}
+
+interface UpdateProfileResponse {
+  token: string | null;
+  user: UserProfile;
+  message: string;
+}
+
+export const getCurrentUser = async (): Promise<UserProfile> => {
+  const response = await api.get<UserProfile>('/auth/me');
+  return response.data;
+};
+
+export const updateProfile = async (data: UpdateProfileData): Promise<UserProfile> => {
+  const response = await api.put<UpdateProfileResponse>('/auth/update-profile', {
+    firstName: data.firstName,
+    lastName: data.lastName,
+    email: data.email,
+    address: {
+      street: data.address.street,
+      city: data.address.city,
+      postalCode: data.address.postalCode,
+      country: data.address.country
+    }
+  });
+  const { user: updatedUser } = response.data;
+  
+  // Update the user data in localStorage
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const updatedUserData = { ...currentUser, ...updatedUser };
+  localStorage.setItem('user', JSON.stringify(updatedUserData));
+  
+  return updatedUser;
 };
