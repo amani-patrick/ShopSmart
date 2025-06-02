@@ -35,12 +35,18 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Edit, Trash, Phone, Mail, MapPin, User } from 'lucide-react';
 import { toast } from 'sonner';
-import { getAllSuppliers, addSupplier, updateSupplier, deleteSupplier, type Supplier, type CreateSupplierData } from '@/services/api';
+import { getAllSuppliers, addSupplier, updateSupplier, deleteSupplier, type Supplier, type CreateSupplierData, PaginatedResponse } from '@/services/api';
 
 const Suppliers = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pageSize: 10
+  });
   const [newSupplier, setNewSupplier] = useState<CreateSupplierData>({
     name: '',
     category: '',
@@ -65,8 +71,14 @@ const Suppliers = () => {
   const fetchSuppliers = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllSuppliers();
-      setSuppliers(data);
+      const response = await getAllSuppliers();
+      setSuppliers(response.content);
+      setPagination({
+        currentPage: response.number,
+        totalPages: response.totalPages,
+        totalElements: response.totalElements,
+        pageSize: response.size
+      });
     } catch (error) {
       console.error('Error fetching suppliers:', error);
       toast.error('Failed to fetch suppliers');

@@ -80,7 +80,6 @@ const SignUp = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error(t('common.pleaseFixErrors'));
       return;
     }
 
@@ -106,11 +105,9 @@ const SignUp = () => {
       };
 
       await signup(userData);
-      toast.success(t('common.accountCreated'));
       navigate('/dashboard');
     } catch (error) {
       console.error('Error during signup:', error);
-      toast.error(t('common.signupFailed'));
     } finally {
       setIsConfirmDialogOpen(false);
     }

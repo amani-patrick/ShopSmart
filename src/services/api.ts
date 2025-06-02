@@ -165,13 +165,33 @@ export const getSalesWithProductDetails = async (): Promise<
   return salesWithProductDetails;
 };
 
+export interface SalesSumary{
+  totalSalesToday:number;
+  totalSalesThisWeek:number;
+  totalSalesThisMonth:number;
+  totalItemsSoldToday:number;
+  totalItemsSoldThisWeek:number;
+  totalItemsSoldThisMonth:number;
+  totalProfit:number;
+  profitMargin:number;
+  salesByCategory:Array<{
+    category:string;
+    totalSales:number;
+    totalProfit:number;
+    profitMargin:number;
+  }>;
+  topSellingProducts:Array<{
+    productId:number;
+    productName:string;
+    quantitySold:number;
+    totalAmount:number;
+    totalProfit:number;
+  }>;
+  error:any;
+}
+
 // Fetch sales summary
-export const getSalesSummary = async (): Promise<{
-  totalSalesToday: number;
-  totalSalesThisWeek: number;
-  totalSalesThisMonth: number;
-  totalItemsSoldToday: number;
-}> => {
+export const getSalesSummary = async (): Promise<SalesSumary> => {
   const response = await api.get('../sales/summary');
   return response.data;
 };
@@ -210,6 +230,35 @@ export interface CreateSupplierData {
   active: boolean;
 }
 
+export interface PaginatedResponse<T>{
+  content: T[];
+  pageable:{
+    pageNumber:number;
+    pageSize:number;
+    sort:{
+      empty:boolean;
+      sorted:boolean;
+      unsorted:boolean;
+    };
+    offset:number;
+    unpaged:boolean;
+    paged:boolean;
+  };
+  last:boolean;
+  totalPages:number;
+  totalElements:number;
+  first:boolean;
+  numberOfElements:number;
+  size:number;
+  number:number;
+  sort:{
+    empty:boolean;
+    sorted:boolean;
+    unsorted:boolean;
+  };
+  empty:boolean;
+}
+
 // Add a new supplier
 export const addSupplier = async (supplierData: CreateSupplierData): Promise<Supplier> => {
   const response = await api.post<Supplier>('../suppliers', supplierData);
@@ -228,8 +277,8 @@ export const updateSupplier = async (
 };
 
 // Fetch all suppliers
-export const getAllSuppliers = async (): Promise<Supplier[]> => {
-  const response = await api.get<Supplier[]>('../suppliers');
+export const getAllSuppliers = async (): Promise<PaginatedResponse<Supplier>> => {
+  const response = await api.get<PaginatedResponse<Supplier>>('../suppliers');
   return response.data;
 };
 
@@ -344,8 +393,7 @@ export const addInventoryItem = async (inventoryData: {
   return response.data;
 };
 
-export const getInventories = async (): Promise<
-{
+export const getInventories = async (): Promise<PaginatedResponse<{
   id: number;
   imageUrl: string;
   name: string;
@@ -356,10 +404,21 @@ export const getInventories = async (): Promise<
   sellingPrice: number;
   supplier: string;
   stockAlertLevel: number;
-  price: number; 
-}[]
-> => {
-  const response = await api.get('../inventory/all');
+  price: number;
+}>> => {
+  const response = await api.get<PaginatedResponse<{
+    id: number;
+    imageUrl: string;
+    name: string;
+    category: string;
+    stockQuantity: number;
+    unit: string;
+    costPrice: number;
+    sellingPrice: number;
+    supplier: string;
+    stockAlertLevel: number;
+    price: number;
+  }>>('../inventory/all');
   return response.data;
 };
 

@@ -3,57 +3,78 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { ProductDialog } from '@/components/ui/productDialog'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Plus, Edit, Trash, Package, Upload, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { getInventories, addInventoryItem, updateInventoryItem,getInventoryById,deleteInventoryItem,getAllSuppliers,type Supplier } from '@/services/api';
+import { getInventories, addInventoryItem, updateInventoryItem, getInventoryById, deleteInventoryItem, getAllSuppliers, type Supplier } from '@/services/api';
 
 const Inventory = () => {
-  const [products, setProducts] = useState<any[]>([]);
+  interface PaginatedResponse<T> {
+    content: T[];
+    pageable: {
+      pageNumber: number;
+      pageSize: number;
+      sort: {
+        empty: boolean;
+        sorted: boolean;
+        unsorted: boolean;
+      };
+      offset: number;
+      unpaged: boolean;
+      paged: boolean;
+    };
+    last: boolean;
+    totalPages: number;
+    totalElements: number;
+    first: boolean;
+    numberOfElements: number;
+    size: number;
+    number: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    empty: boolean;
+  }
+
+  interface Product {
+    id: number;
+    imageUrl: string;
+    name: string;
+    category: string;
+    stockQuantity: number;
+    unit: string;
+    costPrice: number;
+    sellingPrice: number;
+    supplier: string;
+    stockAlertLevel: number;
+    price: number;
+  }
+
+  const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showLowStock, setShowLowStock] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pageSize: 10
+  });
 
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -78,8 +99,14 @@ const Inventory = () => {
           getInventories(),
           getAllSuppliers()
         ]);
-        setProducts(productsData);
-        setSuppliers(suppliersData);
+        setProducts(productsData.content || []);
+        setSuppliers(suppliersData.content || []);
+        setPagination({
+          currentPage: productsData.pageable.pageNumber || 0,
+          totalPages: productsData.totalPages || 0,
+          totalElements: productsData.totalElements || 0,
+          pageSize: productsData.pageable.pageSize || 10
+        });
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error('Failed to fetch data. Please try again later.');
@@ -98,6 +125,12 @@ const Inventory = () => {
     
     return matchesSearch && matchesCategory && matchesStock;
   });
+
+  // Handle opening product details
+  const handleViewDetails = (product: Product) => {
+    setSelectedProduct(product);
+    setIsDetailsDialogOpen(true);
+  };
 
   // Handle adding a new product
   const handleAddProduct = async () => {
@@ -232,6 +265,63 @@ const Inventory = () => {
             Track your stock levels, add new products, and manage inventory.
           </p>
         </div>
+
+        {/* Product Details Dialog */}
+        <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+          <DialogContent className="sm:max-w-[800px] sm:max-h-[600px]">
+            <DialogHeader>
+              <DialogTitle>Product Details</DialogTitle>
+              <DialogDescription>
+                View and edit product information
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {/* Product image */}
+              <div className="flex justify-center">
+                <img 
+                  src={selectedProduct?.imageUrl || '/placeholder-image.png'} 
+                  alt={selectedProduct?.name} 
+                  className="w-64 h-64 object-cover rounded-lg"
+                />
+              </div>
+              {/* Product details grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Name</Label>
+                  <p>{selectedProduct?.name}</p>
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <p>{selectedProduct?.category}</p>
+                </div>
+                <div>
+                  <Label>Quantity</Label>
+                  <p>{selectedProduct?.stockQuantity} {selectedProduct?.unit}</p>
+                </div>
+                <div>
+                  <Label>Cost Price</Label>
+                  <p>${selectedProduct?.costPrice.toFixed(2)}</p>
+                </div>
+                <div>
+                  <Label>Selling Price</Label>
+                  <p>${selectedProduct?.sellingPrice.toFixed(2)}</p>
+                </div>
+                <div>
+                  <Label>Supplier</Label>
+                  <p>{selectedProduct?.supplier}</p>
+                </div>
+                <div>
+                  <Label>Stock Alert Level</Label>
+                  <p>{selectedProduct?.stockAlertLevel}</p>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>Close</Button>
+              <Button onClick={() => setIsEditDialogOpen(true)}>Edit</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
@@ -629,6 +719,13 @@ const Inventory = () => {
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleViewDetails(product)}
+                          >
+                            <Package className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

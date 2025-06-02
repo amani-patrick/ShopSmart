@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 
 const Sales = () => {
   const [sales, setSales] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]); 
+  const [products, setProducts] = useState<any[]>([]); // Initialize as empty array
   const [cart, setCart] = useState<any[]>([]); 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({
@@ -42,11 +42,17 @@ const Sales = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const productsData = await getInventories();
-        setProducts(productsData);
+        const productsResponse = await getInventories();
+        if (productsResponse && 'content' in productsResponse) {
+          setProducts(productsResponse.content);
+        } else {
+          console.error('Invalid products response format:', productsResponse);
+          setProducts([]);
+        }
       } catch (error) {
         console.error('Error fetching products:', error);
         toast.error('Failed to fetch products. Please try again.');
+        setProducts([]);
       }
     };
 
@@ -205,7 +211,7 @@ const Sales = () => {
                   className="border rounded p-2"
                 >
                   <option value="">Select a product</option>
-                  {products.map((product) => (
+                  {Array.isArray(products) && products.map((product) => (
                     <option key={product.id} value={product.id}>
                       {product.name} - ${product.sellingPrice.toFixed(2)} ({product.stockQuantity} {product.unit} available)
                     </option>

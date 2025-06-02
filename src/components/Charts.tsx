@@ -27,7 +27,7 @@ export const LineChartComponent = () => {
         const inventories = await getInventories();
 
         // Map inventory data for quick lookup
-        const inventoryMap = inventories.reduce((map, item) => {
+        const inventoryMap = inventories.content.reduce((map, item) => {
           map[item.id] = item;
           return map;
         }, {} as Record<number, any>);
@@ -133,7 +133,7 @@ export const BarChartComponent = () => {
           { Sales: number; Profit: number }
         > = {};
 
-        inventories.forEach((inventory) => {
+        inventories.content.forEach((inventory) => {
           const category = inventory.category;
           const inventorySales = salesMap[inventory.id] || [];
           const totalSales = inventorySales.reduce(

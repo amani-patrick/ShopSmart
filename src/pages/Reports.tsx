@@ -49,14 +49,18 @@ const Reports = () => {
   const [topSellingProducts, setTopSellingProducts] = useState<
     Array<{ name: string; quantity: number; sales: number }>
   >([]);
-  const [totalSales, setTotalSales] = useState(0);
-  const [totalProfit, setTotalProfit] = useState(0);
-  const [profitMargin, setProfitMargin] = useState(0);
   const [salesSummary, setSalesSummary] = useState({
     totalSalesToday: 0,
     totalSalesThisWeek: 0,
     totalSalesThisMonth: 0,
     totalItemsSoldToday: 0,
+    totalItemsSoldThisWeek: 0,
+    totalItemsSoldThisMonth: 0,
+    totalProfit: 0,
+    profitMargin: 0,
+    salesByCategory: [],
+    topSellingProducts: [],
+    error: null,
   });
 
   // Fetch sales summary
@@ -65,12 +69,33 @@ const Reports = () => {
       try {
         const summary = await getSalesSummary();
         setSalesSummary(summary);
+        
+        // Set sales data for the bar chart
+        const salesData = [
+          { name: 'Today', sales: summary.totalSalesToday, profit: summary.totalProfit },
+          { name: 'This Week', sales: summary.totalSalesThisWeek, profit: summary.totalProfit },
+          { name: 'This Month', sales: summary.totalSalesThisMonth, profit: summary.totalProfit }
+        ];
+        setSalesData(salesData);
+
+        // Set category performance data for the pie chart
+        const categoryData = summary.salesByCategory.map(category => ({
+          name: category.category,
+          value: category.totalSales
+        }));
+        setCategoryPerformanceData(categoryData);
+
+        // Set top selling products
+        const topProducts = summary.topSellingProducts.map(product => ({
+          name: product.productName,
+          quantity: product.quantitySold,
+          sales: product.totalAmount
+        }));
+        setTopSellingProducts(topProducts);
       } catch (error) {
-        console.error('Error fetching sales summary:', error);
         toast.error('Failed to fetch sales summary. Please try again.');
       }
     };
-
     fetchSalesSummary();
   }, []);
 
@@ -82,7 +107,7 @@ const Reports = () => {
         const inventories = await getInventories();
 
         // Map inventory data for quick lookup
-        const inventoryMap: Record<string, any> = inventories.reduce(
+        const inventoryMap: Record<string, any> = inventories.content.reduce(
           (map, item) => {
             map[item.id] = item;
             return map;
@@ -106,7 +131,7 @@ const Reports = () => {
 
         // Aggregate sales and profits by category
         const categoryMap: Record<string, { sales: number; profit: number }> = {};
-        inventories.forEach((inventory: any) => {
+        inventories.content.forEach((inventory: any) => {
           const category = inventory.category;
           const totalSales = (inventory.sales || []).reduce(
             (sum: number, sale: any) => sum + (sale.totalAmount || 0),
@@ -135,7 +160,7 @@ const Reports = () => {
         );
 
         // Calculate top-selling products
-        const topProducts = inventories
+        const topProducts = inventories.content
           .map((inventory: any) => ({
             name: inventory.name,
             quantity: inventory.sales.reduce(
@@ -150,26 +175,10 @@ const Reports = () => {
           .sort((a, b) => b.sales - a.sales)
           .slice(0, 5);
 
-        // Calculate total sales, profit, and profit margin
-        const totalSales = formattedSalesData.reduce(
-          (sum: number, item: any) => sum + item.sales,
-          0
-        );
-        const totalProfit = formattedSalesData.reduce(
-          (sum: number, item: any) => sum + item.profit,
-          0
-        );
-        const profitMargin = totalSales
-          ? Math.round((totalProfit / totalSales) * 100)
-          : 0;
-
         // Update state
         setSalesData(formattedSalesData);
         setCategoryPerformanceData(formattedCategoryData);
         setTopSellingProducts(topProducts);
-        setTotalSales(totalSales);
-        setTotalProfit(totalProfit);
-        setProfitMargin(profitMargin);
       } catch (error) {
         console.error('Error fetching report data:', error);
         toast.error('Failed to fetch report data. Please try again.');
@@ -235,7 +244,7 @@ const Reports = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-800">
-              ${salesSummary.totalSalesToday.toFixed(2)}
+              ${salesSummary.totalSalesToday}
             </div>
           </CardContent>
         </Card>
@@ -269,7 +278,7 @@ const Reports = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-800">
-              ${salesSummary.totalSalesThisWeek.toFixed(2)}
+              ${salesSummary.totalSalesThisWeek}
             </div>
           </CardContent>
         </Card>
@@ -408,7 +417,7 @@ const Reports = () => {
             <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalSales.toFixed(2)}</div>
+            <div className="text-2xl font-bold">${salesSummary.totalSalesToday}</div>
           </CardContent>
         </Card>
         <Card>
@@ -416,7 +425,7 @@ const Reports = () => {
             <CardTitle className="text-sm font-medium">Total Profit</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalProfit.toFixed(2)}</div>
+            <div className="text-2xl font-bold">${salesSummary.totalProfit}</div>
           </CardContent>
         </Card>
         <Card>
@@ -424,7 +433,7 @@ const Reports = () => {
             <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{profitMargin}%</div>
+            <div className="text-2xl font-bold">{salesSummary.profitMargin}%</div>
           </CardContent>
         </Card>
       </div>
@@ -510,13 +519,13 @@ const Reports = () => {
                 </tr>
               </thead>
               <tbody>
-                {topSellingProducts.length > 0 ? (
-                  topSellingProducts.map((product, index) => (
+                {salesSummary.topSellingProducts.length > 0 ? (
+                  salesSummary.topSellingProducts.map((product, index) => (
                     <tr key={index} className="border-b">
-                      <td className="p-4 align-middle font-medium">{product.name}</td>
-                      <td className="p-4 align-middle text-right">{product.quantity}</td>
+                      <td className="p-4 align-middle font-medium">{product.productName}</td>
+                      <td className="p-4 align-middle text-right">{product.quantitySold}</td>
                       <td className="p-4 align-middle text-right">
-                        ${product.sales.toFixed(2)}
+                        ${product.totalAmount.toFixed(2)}
                       </td>
                     </tr>
                   ))
